@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A2E6E">
+<title>SHOPCHATTA — Shop. Chat. Earn. All In One Place.</title>
+<!--
+  SHOPCHATTA — Founder: Emmanuel
+  ONE FILE: HTML + CSS + JavaScript + Supabase JS (+ localStorage backup).
+  1) Scroll to CONFIG (near the top of the <script>) and paste your Project URL + Publishable Key.
+  2) Open the app > Menu > Settings > Data, Storage & Help > "Supabase setup SQL" and run the SQL once in Supabase > SQL Editor.
+  3) Put your own email in CONFIG.ADMIN_EMAIL so you become the Admin.
+-->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--blue:#0A2E6E;--blue2:#1450C8;--green:#00E676;--green2:#00B85C;--bg:#F3F6FC;--card:#fff;--ink:#0B1B3A;--mut:#5B6B8C;--line:#E1E7F2;--shadow:0 6px 24px rgba(10,46,110,.10);--r:16px;--warn:#F59E0B;--bad:#E5484D}
+[data-theme=dark]{--bg:#06122B;--card:#0E2147;--ink:#EAF1FF;--mut:#9DB0D6;--line:#1C3668;--shadow:0 6px 24px rgba(0,0,0,.45)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(20,80,200,.16)}
+input[type=checkbox]{width:auto}
+textarea{resize:vertical;min-height:80px}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--mut);margin:11px 0 4px}
+h1,h2,h3{line-height:1.2}
+h2{font-size:1.25rem;margin-bottom:10px}
+h3{font-size:1.05rem;margin-bottom:8px}
+a{color:var(--blue2)}
+.mut{color:var(--mut);font-size:.88rem}
+.sm{font-size:.8rem}
+.hide{display:none!important}
+#app{max-width:1000px;margin:0 auto;min-height:100vh;position:relative;background:var(--bg)}
+.top{position:sticky;top:0;z-index:30;background:linear-gradient(120deg,var(--blue),#0E3C94);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;padding-top:calc(10px + env(safe-area-inset-top))}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.3px;cursor:pointer;font-size:1.1rem}
+.brand b{color:var(--green)}
+.top .sp{flex:1}
+.ibtn{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:12px;min-width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:relative;padding:0 10px;gap:6px;font-weight:600;font-size:.82rem}
+.ibtn svg{width:20px;height:20px}
+.badge{position:absolute;top:-4px;right:-4px;background:var(--green);color:var(--blue);font-size:.65rem;font-weight:800;border-radius:10px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+svg.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+#view{padding:14px 14px 96px;min-height:70vh}
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:1000px;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:flex-end;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:30;box-shadow:0 -6px 20px rgba(10,46,110,.08)}
+#nav button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mut);font-size:.68rem;font-weight:600;cursor:pointer;flex:1;padding:4px 0;position:relative}
+#nav button.on{color:var(--blue2)}
+[data-theme=dark] #nav button.on{color:var(--green)}
+#nav .sellbtn span.plus{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green2));color:var(--blue);display:flex;align-items:center;justify-content:center;margin-top:-22px;box-shadow:0 6px 16px rgba(0,230,118,.45)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);margin-bottom:12px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.row.end{justify-content:flex-end}.row.sb{justify-content:space-between}
+.gap{gap:10px}.col{display:flex;flex-direction:column;gap:8px}
+.grow{flex:1;min-width:0}
+.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:700;cursor:pointer;background:var(--blue2);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:.15s;font-size:.92rem}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-g{background:linear-gradient(135deg,var(--green),var(--green2));color:#042a14}
+.btn-o{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn-d{background:var(--bad)}
+.btn-s{padding:7px 11px;font-size:.8rem;border-radius:10px}
+.btn-block{width:100%}
+.btn-wa{background:#25D366;color:#073b1a}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--ink)}
+.chip.on{background:var(--blue2);color:#fff;border-color:var(--blue2)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none}
+.tabs button{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;color:var(--mut)}
+.tabs button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+.pc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:.15s}
+.pc:hover{transform:translateY(-2px)}
+.pimg{position:relative;aspect-ratio:1/1;background:var(--line)}
+.pimg img{width:100%;height:100%;object-fit:cover;display:block}
+.tag{position:absolute;top:8px;left:8px;background:var(--blue);color:#fff;font-size:.66rem;font-weight:700;padding:3px 8px;border-radius:8px}
+.tag.g{background:var(--green);color:#042a14;top:8px}
+.tag.c{left:auto;right:8px;background:rgba(10,46,110,.8)}
+.tag.s{top:auto;bottom:8px;background:var(--warn);color:#2a1a00}
+.fv{position:absolute;bottom:8px;right:8px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.fv.on{color:#e0245e}.fv.on svg{fill:#e0245e}
+.pb{padding:10px}.pp{font-weight:800;color:var(--blue2);font-size:1rem}
+[data-theme=dark] .pp{color:var(--green)}
+.pt{font-size:.88rem;font-weight:600;margin:2px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pm{font-size:.72rem;color:var(--mut)}
+.av{border-radius:50%;object-fit:cover;background:var(--line);flex:none;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:var(--blue);overflow:hidden}
+.vb{color:var(--blue2);display:inline-flex;vertical-align:middle}.vb svg{width:15px;height:15px;fill:var(--blue2);stroke:#fff}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.7rem;font-weight:800;background:var(--line);color:var(--ink)}
+.pill.g{background:rgba(0,230,118,.18);color:#007a3a}.pill.b{background:rgba(20,80,200,.14);color:var(--blue2)}.pill.w{background:rgba(245,158,11,.2);color:#9a6200}.pill.r{background:rgba(229,72,77,.16);color:var(--bad)}
+.hero{background:linear-gradient(135deg,var(--blue) 0%,#1450C8 70%);color:#fff;border-radius:22px;padding:22px 18px;margin-bottom:14px;position:relative;overflow:hidden}
+.hero h1{font-size:1.6rem;margin:8px 0 6px}.hero h1 b{color:var(--green)}
+.hero p{opacity:.9;margin-bottom:14px}
+.hero:after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,.45),transparent 70%)}
+.banner{background:linear-gradient(90deg,var(--green),#7DFFB3);color:#042a14;padding:10px 14px;border-radius:14px;font-weight:600;margin-bottom:12px;font-size:.9rem}
+.warnbar{background:#FFF4D6;color:#6b4700;border:1px solid #F3D58A;padding:10px 12px;border-radius:12px;margin-bottom:12px;font-size:.84rem}
+.sect{display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px}.sect h3{margin:0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.25rem;color:var(--blue2)}[data-theme=dark] .stat b{color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:12px}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue2),var(--green))}
+#modal .ov{position:fixed;inset:0;background:rgba(3,12,32,.6);z-index:60;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+#modal .sheet{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+#modal .sheet.wide{max-width:760px}
+@media(min-width:700px){#modal .ov{align-items:center}#modal .sheet{border-radius:22px}}
+#toast{position:fixed;left:0;right:0;bottom:90px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:90;pointer-events:none;padding:0 14px}
+#toast .t{background:var(--blue);color:#fff;padding:11px 16px;border-radius:14px;font-weight:600;box-shadow:var(--shadow);max-width:520px;font-size:.88rem;border-left:5px solid var(--green)}
+#toast .t.err{background:#7a1519;border-left-color:#ff6b6b}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.sbox{position:relative}.sbox svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mut)}.sbox input{padding-left:40px}
+.gal{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:var(--r)}
+.gal img{width:100%;max-height:420px;object-fit:cover;scroll-snap-align:center;flex:none;border-radius:var(--r)}
+.big{font-size:1.6rem;font-weight:800;color:var(--blue2)}[data-theme=dark] .big{color:var(--green)}
+.chatwrap{display:flex;flex-direction:column;height:calc(100vh - 150px);min-height:420px}
+#msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:10px 4px}
+.msg{max-width:82%;padding:9px 12px;border-radius:16px;background:var(--card);border:1px solid var(--line);align-self:flex-start;word-wrap:break-word}
+.msg.me{align-self:flex-end;background:var(--blue2);color:#fff;border-color:var(--blue2)}
+.msg .who{font-size:.7rem;font-weight:700;color:var(--green2);margin-bottom:2px}
+.msg .tm{font-size:.65rem;opacity:.7;margin-top:3px;text-align:right}
+.msg .acts{display:flex;gap:8px;margin-top:5px;flex-wrap:wrap}
+.msg .acts button{background:rgba(127,127,127,.18);border:0;border-radius:8px;padding:3px 8px;font-size:.72rem;font-weight:700;cursor:pointer;color:inherit;display:inline-flex;gap:4px;align-items:center}
+.msg audio{max-width:220px;height:34px}
+.composer{display:flex;gap:8px;align-items:flex-end;padding-top:8px}
+.composer textarea{min-height:44px;max-height:110px;border-radius:22px}
+#micBtn{touch-action:none;user-select:none;-webkit-user-select:none;width:46px;height:46px;border-radius:50%;border:0;background:var(--line);color:var(--ink);cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+#micBtn.rec{background:var(--bad);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(229,72,77,.6)}100%{box-shadow:0 0 0 16px rgba(229,72,77,0)}}
+.sendb{width:46px;height:46px;border-radius:50%;border:0;background:var(--green);color:#042a14;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+.pcard{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;margin-bottom:8px;cursor:pointer}
+.pcard img{width:54px;height:54px;border-radius:10px;object-fit:cover}
+.li{display:flex;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.li:last-child{border-bottom:0}
+details.set{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+details.set summary{padding:14px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.set summary::-webkit-details-marker{display:none}
+details.set summary:after{content:"›";transform:rotate(90deg);font-size:1.3rem;color:var(--mut);transition:.2s}
+details.set[open] summary:after{transform:rotate(-90deg)}
+details.set .in{padding:0 14px 14px}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.trow:last-child{border-bottom:0}
+.sw{position:relative;width:46px;height:26px;flex:none}.sw input{opacity:0;width:100%;height:100%;position:absolute;inset:0;cursor:pointer;z-index:2}
+.sw i{position:absolute;inset:0;background:var(--line);border-radius:20px;transition:.2s}
+.sw i:before{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+i{background:var(--green2)}.sw input:checked+i:before{transform:translateX(20px)}
+.steps{display:flex;gap:4px;margin:8px 0}
+.steps div{flex:1;text-align:center;font-size:.68rem;font-weight:700;color:var(--mut)}
+.steps div:before{content:"";display:block;height:6px;border-radius:4px;background:var(--line);margin-bottom:4px}
+.steps div.on{color:var(--green2)}.steps div.on:before{background:var(--green)}
+.post video,.post img.pm{width:100%;border-radius:12px;max-height:480px;object-fit:cover;background:#000}
+.starbtn{background:none;border:0;font-size:1.7rem;color:#c8d1e4;cursor:pointer}.starbtn.on{color:#FFB400}
+.tbl{width:100%;border-collapse:collapse;font-size:.82rem}.tbl th,.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+.scroll{overflow-x:auto}
+.empty{text-align:center;padding:30px 10px;color:var(--mut)}
+.empty .em{font-size:2.4rem}
+.authwrap{max-width:460px;margin:0 auto}
+.avpick{width:92px;height:92px;border-radius:50%;border:2px dashed var(--blue2);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;margin:6px auto;background:var(--bg);color:var(--blue2);text-align:center;font-size:.7rem;font-weight:700}
+.avpick img{width:100%;height:100%;object-fit:cover}
+.splash{position:fixed;inset:0;background:linear-gradient(160deg,var(--blue),#1450C8);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;z-index:100;gap:10px;transition:opacity .4s}
+.splash b{font-size:1.8rem;letter-spacing:1px}.splash span{color:var(--green);font-weight:700}
+pre.sql{background:#06122B;color:#9ef7c5;padding:12px;border-radius:12px;font-size:.7rem;max-height:300px;overflow:auto;white-space:pre-wrap}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.menu-grid .card{text-align:center;cursor:pointer;margin:0;padding:16px 8px;font-weight:700;font-size:.88rem}
+.menu-grid svg{width:26px;height:26px;color:var(--blue2);display:block;margin:0 auto 6px}
+@media(min-width:900px){.grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}.hero h1{font-size:2.2rem}}
+</style>
+</head>
+<body>
+<div class="splash" id="splash"><div id="splashLogo"></div><b>SHOP<span>CHATTA</span></b><div class="mut" style="color:#cfe0ff">Shop. Chat. Earn. All In One Place.</div></div>
+<div id="app"><header class="top" id="top"></header><main id="view"></main><nav id="nav"></nav></div>
+<div id="modal"></div><div id="toast"></div>
+<script>
+'use strict';
+/* =====================================================================
+   CONFIG — paste your Supabase details here (the only part you must edit)
+   ===================================================================== */
+const CONFIG={
+  SUPABASE_URL:'PUT YOUR PROJECT URL HERE',
+  SUPABASE_KEY:'PUT YOUR KEY HERE',
+  ADMIN_EMAIL:'',            // Emmanuel's email -> becomes Admin on registration
+  PAYSTACK_KEY:'',           // optional Paystack public key (pk_live_… / pk_test_…) for real card payments
+  SUPPORT_WHATSAPP:'',       // optional support number with country code, e.g. 2348012345678
+  COMMISSION:0.05, PRO_PRICE_USD:4.99, BOOST_PRICE_USD:2, BIG_WITHDRAW_USD:300, REF_BONUS_USD:1,
+  DEMO_CODES:true,           // shows verification codes on screen until a real SMS/email sender is wired to the "outbox" table
+  MEDIA_BUCKET:'media'
+};
+const CLOUD_ON=/^https?:\/\//.test(CONFIG.SUPABASE_URL)&&!!CONFIG.SUPABASE_KEY&&!/PUT YOUR/i.test(CONFIG.SUPABASE_KEY);
+let sb=null;
+try{ if(CLOUD_ON&&window.supabase) sb=window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY); }catch(e){ console.warn('Supabase init failed',e); }
+
+/* ============================ helpers ============================ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)});
+const now=()=>new Date().toISOString();
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ago=ts=>{const s=(Date.now()-new Date(ts))/1000;if(s<60)return'now';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return new Date(ts).toLocaleDateString()};
+const clock=ts=>new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const first=n=>String(n||'Someone').trim().split(/\s+/)[0];
+const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(Error('Could not load '+src));document.head.appendChild(s)});
+const LS='shopchatta.';
+const lsGet=(k,d)=>{try{const v=localStorage.getItem(LS+k);return v===null?d:JSON.parse(v)}catch(e){return d}};
+let lsWarned=false;
+const lsSet=(k,v)=>{try{localStorage.setItem(LS+k,JSON.stringify(v))}catch(e){if(!lsWarned){lsWarned=true;toast('Device storage is full — new data is kept in the cloud only.','err')}}};
+function toast(msg,kind){const t=$('#toast');if(!t)return;const d=document.createElement('div');d.className='t '+(kind||'');d.textContent=msg;t.appendChild(d);setTimeout(()=>d.remove(),kind==='err'?5200:3200)}
+
+/* icons */
+const IC={home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',bag:'<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',plus:'<path d="M12 5v14M5 12h14"/>',chat:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/>',menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',search:'<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/>',heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>',star:'<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',send:'<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',mic:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>',spk:'<path d="M11 5L6 9H2v6h4l5 4z"/><path d="M19 5a9 9 0 0 1 0 14M15.5 8.5a5 5 0 0 1 0 7"/>',back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',wallet:'<path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',box:'<path d="M21 16V8l-9-5-9 5v8l9 5z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/>',video:'<rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4z"/>',cog:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',close:'<path d="M18 6L6 18M6 6l12 12"/>',check:'<path d="M20 6L9 17l-5-5"/>',trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>',flag:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>',users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',gift:'<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',thumb:'<path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.3a2 2 0 0 0 2-1.7l1.4-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>'};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24">${IC[n]||''}</svg>`;
+const logo=(s=36)=>`<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-label="SHOPCHATTA"><defs><linearGradient id="lg${s}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1450C8"/><stop offset="1" stop-color="#0A2E6E"/></linearGradient></defs><path d="M12 5h40a8 8 0 0 1 8 8v27a8 8 0 0 1-8 8H31L16 60V48h-4a8 8 0 0 1-8-8V13a8 8 0 0 1 8-8z" fill="url(#lg${s})" stroke="#00E676" stroke-width="2"/><path d="M21 24h22l2 17H19z" fill="#fff"/><path d="M26.5 24v-3.5a5.5 5.5 0 0 1 11 0V24" fill="none" stroke="#00E676" stroke-width="3" stroke-linecap="round"/><circle cx="28" cy="31.5" r="1.8" fill="#0A2E6E"/><circle cx="36" cy="31.5" r="1.8" fill="#0A2E6E"/><path d="M27.5 35.5q4.5 3.8 9 0" fill="none" stroke="#00B85C" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+const verBadge=`<span class="vb" title="Verified">${'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'}</span>`;
+
+/* ============================ i18n ============================ */
+const I={
+ en:{home:'Home',market:'Market',sell:'Sell',chats:'Chats',menu:'Menu',search:'Search tech products…',buy:'Buy now',login:'Log in',signup:'Sign up',settings:'Settings',wallet:'Wallet',orders:'Orders',fav:'Favourites',help:'Help',logout:'Log out',creator:'Creator',notif:'Notifications',slogan:'Shop. Chat. Earn. All In One Place.',welcome:'Welcome'},
+ fr:{home:'Accueil',market:'Marché',sell:'Vendre',chats:'Discussions',menu:'Menu',search:'Rechercher des produits tech…',buy:'Acheter',login:'Connexion',signup:"S'inscrire",settings:'Paramètres',wallet:'Portefeuille',orders:'Commandes',fav:'Favoris',help:'Aide',logout:'Déconnexion',creator:'Créateur',notif:'Notifications',slogan:'Achetez. Discutez. Gagnez. Tout au même endroit.',welcome:'Bienvenue'},
+ es:{home:'Inicio',market:'Mercado',sell:'Vender',chats:'Chats',menu:'Menú',search:'Buscar productos tech…',buy:'Comprar',login:'Iniciar sesión',signup:'Registrarse',settings:'Ajustes',wallet:'Cartera',orders:'Pedidos',fav:'Favoritos',help:'Ayuda',logout:'Cerrar sesión',creator:'Creador',notif:'Notificaciones',slogan:'Compra. Chatea. Gana. Todo en un solo lugar.',welcome:'Bienvenido'},
+ pcm:{home:'Home',market:'Market',sell:'Sell',chats:'Chat',menu:'Menu',search:'Find tech product…',buy:'Buy am now',login:'Log in',signup:'Sign up',settings:'Settings',wallet:'Wallet',orders:'Orders',fav:'Favourites',help:'Help',logout:'Log out',creator:'Creator',notif:'Notifications',slogan:'Shop. Chat. Earn. Everything for one place.',welcome:'Welcome'},
+ yo:{home:'Ilé',market:'Ọjà',sell:'Tà',chats:'Ìfọ̀rọ̀wérọ̀',menu:'Àtòjọ',search:'Wá ọjà ẹ̀rọ…',buy:'Ra báyìí',login:'Wọlé',signup:'Forúkọ sílẹ̀',settings:'Ètò',wallet:'Àpò owó',orders:'Àwọn àṣẹ',fav:'Àwọn ayanfẹ́',help:'Ìrànlọ́wọ́',logout:'Jáde',creator:'Olùṣẹ̀dá',notif:'Ìfitónilétí',slogan:'Ra. Sọ̀rọ̀. Jèrè. Gbogbo rẹ̀ ní ibì kan.',welcome:'Káàbọ̀'},
+ ig:{home:'Ụlọ',market:'Ahịa',sell:'Ree',chats:'Mkparịta ụka',menu:'Menu',search:'Chọọ ngwaahịa tech…',buy:'Zụta ugbu a',login:'Banye',signup:'Debanye aha',settings:'Nhazi',wallet:'Akpa ego',orders:'Oda',fav:'Ndị a họọrọ',help:'Enyemaka',logout:'Pụọ',creator:'Onye okike',notif:'Ọkwa',slogan:'Zụta. Kparịta. Nweta. Ihe niile n’otu ebe.',welcome:'Nnọọ'},
+ ha:{home:'Gida',market:'Kasuwa',sell:'Sayar',chats:'Tattaunawa',menu:'Menu',search:'Nemi kayan fasaha…',buy:'Sayi yanzu',login:'Shiga',signup:'Yi rajista',settings:'Saituna',wallet:'Jakar kuɗi',orders:'Oda',fav:'Abubuwan da aka fi so',help:'Taimako',logout:'Fita',creator:'Mai ƙirƙira',notif:'Sanarwa',slogan:'Saya. Yi hira. Samu. Duka a wuri ɗaya.',welcome:'Barka da zuwa'}
+};
+const LANGS={en:'English',fr:'Français',es:'Español',pcm:'Pidgin',yo:'Yorùbá',ig:'Igbo',ha:'Hausa'};
+const t=k=>(I[S.lang]&&I[S.lang][k])||I.en[k]||k;
+const SPEECH={en:'en-US',fr:'fr-FR',es:'es-ES',pcm:'en-NG',yo:'yo-NG',ig:'ig-NG',ha:'ha-NG'};
+
+/* ============================ currencies (150+) ============================ */
+const CUR_RAW='USD:$:1;NGN:₦:1520;GBP:£:0.78;EUR:€:0.92;GHS:₵:14;KES:KSh:129;ZAR:R:18;EGP:E£:49;MAD::10;TZS:TSh:2650;UGX:USh:3700;RWF::1400;ETB:Br:130;XOF:CFA:600;XAF:FCFA:600;DZD::134;TND::3.1;LYD::4.9;SDG::600;AOA::920;ZMW:ZK:27;BWP:P:13.6;NAD::18;MZN::64;MWK::1735;SLE::22.7;GMD::70;LRD::190;GNF::8600;CDF::2850;MUR::46;SCR::14;MGA::4500;ZWG::26;SOS::571;BIF::2900;DJF::178;CVE::101;STN::23;SZL::18;LSL::18;ERN::15;MRU::40;KMF::450;JPY:¥:150;CNY:CN¥:7.2;INR:₹:84;PKR:Rs:278;BDT:৳:120;LKR::295;NPR::134;IDR:Rp:15800;MYR:RM:4.5;SGD:S$:1.34;THB:฿:35;VND:₫:25000;PHP:₱:57;KRW:₩:1370;TWD:NT$:32;HKD:HK$:7.8;MOP::8;MMK::2100;KHR::4050;LAK::21800;BND::1.34;MNT:₮:3400;KZT:₸:480;UZS::12700;AZN:₼:1.7;GEL:₾:2.7;AMD::390;AFN::70;IRR::42000;IQD::1310;JOD::0.71;KWD::0.31;SAR::3.75;AED::3.67;QAR::3.64;BHD::0.376;OMR::0.385;ILS:₪:3.7;LBP::89500;YER::250;TRY:₺:34;KGS::85;TJS::10.6;TMT::3.5;BTN::84;MVR::15.4;CHF::0.87;SEK:kr:10.5;NOK::10.8;DKK::6.9;PLN:zł:4;CZK:Kč:23;HUF:Ft:365;RON::4.6;BGN::1.8;RSD::108;UAH:₴:41;RUB:₽:95;BYN::3.3;MDL::17.8;ALL::92;MKD::57;BAM::1.8;ISK::138;GIP::0.78;CAD:CA$:1.38;MXN:MX$:19.5;BRL:R$:5.6;ARS::1000;CLP::950;COP::4200;PEN::3.75;UYU::41;PYG::7800;BOB::6.9;VES::45;GTQ::7.7;HNL::25;NIO::36.8;CRC:₡:510;PAB::1;DOP::60;JMD::157;TTD::6.8;BBD::2;BSD::1;BZD::2;HTG::131;CUP::24;XCD::2.7;AWG::1.8;ANG::1.79;KYD::0.83;BMD::1;GYD::209;SRD::36;AUD:A$:1.52;NZD:NZ$:1.67;FJD::2.25;PGK::3.9;WST::2.8;TOP::2.35;VUV::118;SBD::8.4;XPF::110;SYP::13000;KPW::900';
+const RATES={},SYM={},CURS=[];
+CUR_RAW.split(';').forEach(x=>{const [c,s,r]=x.split(':');RATES[c]=+r;if(s)SYM[c]=s;CURS.push(c)});
+const C2C={NG:'NGN',US:'USD',GB:'GBP',GH:'GHS',KE:'KES',ZA:'ZAR',EG:'EGP',MA:'MAD',TZ:'TZS',UG:'UGX',RW:'RWF',ET:'ETB',SN:'XOF',CI:'XOF',BJ:'XOF',TG:'XOF',ML:'XOF',BF:'XOF',NE:'XOF',CM:'XAF',GA:'XAF',TD:'XAF',CG:'XAF',DZ:'DZD',TN:'TND',ZM:'ZMW',BW:'BWP',NA:'NAD',MZ:'MZN',IN:'INR',PK:'PKR',BD:'BDT',LK:'LKR',JP:'JPY',CN:'CNY',ID:'IDR',MY:'MYR',SG:'SGD',TH:'THB',VN:'VND',PH:'PHP',KR:'KRW',TW:'TWD',HK:'HKD',AE:'AED',SA:'SAR',QA:'QAR',KW:'KWD',IL:'ILS',TR:'TRY',RU:'RUB',UA:'UAH',PL:'PLN',CZ:'CZK',HU:'HUF',RO:'RON',CH:'CHF',SE:'SEK',NO:'NOK',DK:'DKK',CA:'CAD',MX:'MXN',BR:'BRL',AR:'ARS',CL:'CLP',CO:'COP',PE:'PEN',AU:'AUD',NZ:'NZD',IE:'EUR',DE:'EUR',FR:'EUR',ES:'EUR',IT:'EUR',NL:'EUR',BE:'EUR',AT:'EUR',PT:'EUR',FI:'EUR',GR:'EUR'};
+const TZ2C={'Africa/Lagos':'NG','Africa/Accra':'GH','Africa/Nairobi':'KE','Africa/Johannesburg':'ZA','Africa/Cairo':'EG','Africa/Casablanca':'MA','Africa/Dar_es_Salaam':'TZ','Africa/Kampala':'UG','Africa/Addis_Ababa':'ET','Africa/Dakar':'SN','Africa/Abidjan':'CI','Europe/London':'GB','America/New_York':'US','America/Chicago':'US','America/Los_Angeles':'US','America/Denver':'US','America/Toronto':'CA','Europe/Paris':'FR','Europe/Berlin':'DE','Europe/Madrid':'ES','Europe/Rome':'IT','Asia/Kolkata':'IN','Asia/Dubai':'AE','Asia/Tokyo':'JP','Australia/Sydney':'AU'};
+const toUSD=(a,c)=>a/(RATES[c]||1);
+const fromUSD=(u,c)=>u*(RATES[c]||1);
+function fmt(a,c){const d=(RATES[c]||1)>=500?0:2;const s=SYM[c]!==undefined?SYM[c]:c+' ';return s+Number(a||0).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d})}
+const fmtUSD=u=>fmt(fromUSD(u,S.cur),S.cur);
+const pconv=p=>fmt(fromUSD(toUSD(p.price,p.cur),S.cur),S.cur);
+function detectCountry(){let cc=null;try{const m=(navigator.language||'').match(/[-_]([A-Za-z]{2})$/);if(m)cc=m[1].toUpperCase()}catch(e){}
+  try{const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;if(TZ2C[tz])cc=TZ2C[tz]}catch(e){}return cc||'US'}
+async function loadLiveRates(){try{const c=lsGet('rates',null);if(c&&Date.now()-c.t<43200000){Object.assign(RATES,c.r);return}
+  const ctl=new AbortController();setTimeout(()=>ctl.abort(),5000);const r=await fetch('https://open.er-api.com/v6/latest/USD',{signal:ctl.signal});const j=await r.json();
+  if(j&&j.rates){const out={};CURS.forEach(k=>{if(j.rates[k])out[k]=j.rates[k]});Object.assign(RATES,out);lsSet('rates',{t:Date.now(),r:out});if(typeof render==='function')render()}}catch(e){}}
+async function refineCountryByIP(){if(lsGet('cur',null))return;try{const ctl=new AbortController();setTimeout(()=>ctl.abort(),3000);const r=await fetch('https://ipapi.co/json/',{signal:ctl.signal});const j=await r.json();
+  if(j&&j.country_code&&C2C[j.country_code]){S.country=j.country_code;S.cur=C2C[j.country_code];render()}}catch(e){}}
+
+/* ============================ state + data layer ============================ */
+const TABLES=['profiles','wallets','products','chats','messages','orders','transactions','notifications','outbox','disputes','reviews','referrals','posts','follows','favourites','reports','announcements','verifications','ads','tickets'];
+const C={};TABLES.forEach(x=>C[x]=lsGet('t_'+x,[]));
+const S={meId:lsGet('session',null),route:'home',arg:null,country:detectCountry(),cur:lsGet('cur',null),lang:lsGet('lang','en'),theme:lsGet('theme','light'),cloudErr:false,
+  f:{q:'',cat:'',cond:'',min:'',max:'',loc:'',status:'in_stock',sort:'new'},adminTab:'overview',chatId:null,chatTab:'private',sellTab:'in_stock',orderTab:'buying',openSet:'profile',viewed:new Set(),viewQ:[],tmp:{photos:[],avatar:null,idPhoto:null,media:null},ref:null,pending:null,unlocked:false};
+if(!S.cur)S.cur=C2C[S.country]||'USD';
+const fromRow=r=>Object.assign({},r.data||{},{id:r.id,created_at:r.created_at});
+const toRow=o=>({id:o.id,created_at:o.created_at,owner:String(o.owner||o.uid||o.from||o.buyer||''),data:o});
+let cloudWarned=false;
+function cloudErr(e,tb){if(e&&e.code==='23505')return;S.cloudErr=true;console.warn('Supabase',tb,e);if(!cloudWarned){cloudWarned=true;toast('Cloud sync problem — run the setup SQL (Settings > Data, Storage & Help). Your data is safe on this device.','err');if(typeof render==='function')render()}}
+async function loadAll(){if(!sb)return;await Promise.all(TABLES.map(async tb=>{try{const {data,error}=await sb.from(tb).select('*').order('created_at',{ascending:false}).limit(2000);if(error)throw error;C[tb]=data.map(fromRow);lsSet('t_'+tb,C[tb])}catch(e){cloudErr(e,tb)}}))}
+async function refreshTable(tb){if(!sb)return;try{const {data,error}=await sb.from(tb).select('*').order('created_at',{ascending:false}).limit(2000);if(error)throw error;C[tb]=data.map(fromRow);lsSet('t_'+tb,C[tb])}catch(e){}}
+async function dbInsert(tb,o){o=Object.assign({id:uid(),created_at:now()},o);C[tb].unshift(o);lsSet('t_'+tb,C[tb]);if(sb){const {error}=await sb.from(tb).insert(toRow(o));if(error)cloudErr(error,tb)}return o}
+async function dbUpdate(tb,id,patch){const o=C[tb].find(x=>x.id===id);if(!o)return null;Object.assign(o,patch);lsSet('t_'+tb,C[tb]);if(sb){const {error}=await sb.from(tb).update({data:o,owner:String(o.owner||o.uid||o.from||o.buyer||'')}).eq('id',id);if(error)cloudErr(error,tb)}return o}
+async function dbDelete(tb,id){C[tb]=C[tb].filter(x=>x.id!==id);lsSet('t_'+tb,C[tb]);if(sb){const {error}=await sb.from(tb).delete().eq('id',id);if(error)cloudErr(error,tb)}}
+function startRealtime(){if(!sb)return;try{sb.channel('sc-rt').on('postgres_changes',{event:'*',schema:'public'},p=>{const tb=p.table;if(!C[tb])return;
+  if(p.eventType==='DELETE'){C[tb]=C[tb].filter(x=>x.id!==(p.old&&p.old.id))}else{const o=fromRow(p.new);const i=C[tb].findIndex(x=>x.id===o.id);if(i>=0)C[tb][i]=o;else C[tb].unshift(o)}
+  lsSet('t_'+tb,C[tb]);onDataChange(tb,p)}).subscribe()}catch(e){console.warn(e)}}
+window.addEventListener('storage',e=>{if(e.key&&e.key.indexOf(LS+'t_')===0){const tb=e.key.slice(LS.length+2);if(C[tb]){C[tb]=lsGet('t_'+tb,[]);onDataChange(tb)}}});
+let chgTimer=null;
+function onDataChange(tb,p){
+  if(tb==='messages'&&S.route==='chat'){renderChatBody();return}
+  if(tb==='notifications'&&S.meId&&p&&p.new&&p.new.owner===S.meId&&p.eventType==='INSERT'){const n=fromRow(p.new);toast(n.title+' — '+n.body);try{if(document.hidden&&window.Notification&&Notification.permission==='granted')new Notification(n.title,{body:n.body})}catch(e){}}
+  clearTimeout(chgTimer);chgTimer=setTimeout(()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;if(!$('#modal').firstChild&&S.route!=='chat')render()},500)}
+
+/* ============================ shortcuts ============================ */
+const me=()=>C.profiles.find(p=>p.id===S.meId)||null;
+const U=id=>C.profiles.find(p=>p.id===id);
+const isAdmin=()=>{const m=me();return !!m&&m.role==='admin'};
+const wallet=u=>C.wallets.find(w=>w.uid===u);
+const dName=u=>{const x=U(u);return x?(x.storeName&&x.sellerStatus==='approved'?x.storeName:x.name):'User'};
+const sellerSales=u=>C.orders.filter(o=>o.seller===u&&o.status==='completed').length;
+const isTop=u=>{const x=U(u);return !!x&&sellerSales(u)>=5&&(x.rating||0)>=4.5};
+const isFav=id=>C.favourites.some(f=>f.uid===S.meId&&f.productId===id);
+const isFollowing=id=>C.follows.some(f=>f.follower===S.meId&&f.following===id);
+const CATS=['Phones','Laptops','Accessories','Gadgets','Smart Home','Software','Tech Services'];
+const CAT_EMO={Phones:'📱',Laptops:'💻',Accessories:'🎧',Gadgets:'⌚','Smart Home':'🏠',Software:'💿','Tech Services':'🛠️'};
+const CONDS={new:'New',used:'Used',refurbished:'Refurbished'};
+const STATUSES={in_stock:'In Stock',sold:'Sold',reserved:'Reserved',draft:'Draft'};
+function ph(cat,title){const e=CAT_EMO[cat]||'🛍️';const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2E6E"/><stop offset="1" stop-color="#1450C8"/></linearGradient></defs><rect width="400" height="400" fill="url(#g)"/><circle cx="330" cy="70" r="90" fill="#00E676" opacity=".25"/><text x="200" y="235" font-size="150" text-anchor="middle">${e}</text></svg>`;return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)))}
+const imgOf=p=>(p.photos&&p.photos[0])||ph(p.cat);
+const avatar=(u,s=40)=>{const x=typeof u==='string'?U(u):u;if(x&&x.photo)return`<img class="av" width="${s}" height="${s}" src="${esc(x.photo)}" alt="">`;return`<span class="av" style="width:${s}px;height:${s}px;font-size:${s/2.4}px">${esc((x&&x.name||'?')[0]||'?').toUpperCase()}</span>`};
+const badgesOf=u=>{const x=U(u);if(!x)return'';return(x.verified?verBadge:'')+(x.pro?' <span class="pill b">PRO</span>':'')+(isTop(u)?' <span class="pill g">★ Top Seller</span>':'')};
+const stars=n=>'★'.repeat(Math.round(n||0))+'☆'.repeat(5-Math.round(n||0));
+
+/* ============================ hashing / codes ============================ */
+async function sha(s){try{if(crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}}catch(e){}let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i);return'djb'+(h>>>0).toString(16)}
+const genCode=()=>String(Math.floor(100000+Math.random()*900000));
+
+/* ============================ media ============================ */
+function fileToDataURL(file,max=760,q=.72){return new Promise((res,rej)=>{if(!file.type.startsWith('image/')){const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);return}
+  const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',q))};img.onerror=()=>rej(Error('Could not read this image.'));img.src=url})}
+const dataURLtoBlob=d=>{const [h,b]=d.split(',');const m=/data:(.*?);base64/.exec(h)[1];const bin=atob(b);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new Blob([a],{type:m})};
+const blobToDataURL=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)});
+async function storeMedia(file){ // images: compress; try Supabase Storage first, fallback to embedded data URL
+  const isImg=file.type.startsWith('image/');
+  if(isImg){const d=await fileToDataURL(file);if(sb){try{const path=`${S.meId||'anon'}/${Date.now()}-${Math.random().toString(16).slice(2)}.jpg`;const {error}=await sb.storage.from(CONFIG.MEDIA_BUCKET).upload(path,dataURLtoBlob(d),{contentType:'image/jpeg'});if(!error)return sb.storage.from(CONFIG.MEDIA_BUCKET).getPublicUrl(path).data.publicUrl}catch(e){}}return d}
+  if(sb){try{const path=`${S.meId||'anon'}/${Date.now()}-${file.name.replace(/[^\w.]/g,'_')}`;const {error}=await sb.storage.from(CONFIG.MEDIA_BUCKET).upload(path,file,{contentType:file.type});if(!error)return sb.storage.from(CONFIG.MEDIA_BUCKET).getPublicUrl(path).data.publicUrl}catch(e){}}
+  if(file.size>2.5*1024*1024)throw Error('This video is too large for device storage. Run the setup SQL (creates the "media" storage bucket) or use a video under 2.5 MB.');
+  return blobToDataURL(file)}
+
+/* ============================ notifications (in-app + email/WhatsApp/SMS queue) ============================ */
+const isOnline=u=>!!u&&!!u.lastSeen&&Date.now()-new Date(u.lastSeen)<120000;
+async function sendNotification(userId,title,body,opts={}){
+  const u=U(userId);if(!u)return;const st=u.settings||{};const n=st.notif||{email:true,whatsapp:true,sms:false,inapp:true};
+  if(n.inapp!==false)await dbInsert('notifications',{uid:userId,owner:userId,title,body,link:opts.link||null,read:false});
+  const online=isOnline(u)&&userId!==S.meId;
+  if(!online||opts.force){const msg=title+' — '+body;
+    if(n.email&&u.email)await dbInsert('outbox',{uid:userId,owner:userId,channel:'email',to:u.email,subject:title,message:body,status:'queued'});
+    if(n.whatsapp&&(u.phone))await dbInsert('outbox',{uid:userId,owner:userId,channel:'whatsapp',to:u.phone,message:msg,status:'queued'});
+    if(n.sms&&u.phone)await dbInsert('outbox',{uid:userId,owner:userId,channel:'sms',to:u.phone,message:msg,status:'queued'})}}
+const notifyAdmins=(title,body,link)=>Promise.all(C.profiles.filter(p=>p.role==='admin').map(a=>sendNotification(a.id,title,body,{link})));
+
+/* ============================ auth ============================ */
+const defaultSettings=()=>({privacy:{showPhone:false,showOnline:true,whoMessages:'everyone',profilePublic:true},notif:{email:true,whatsapp:true,sms:false,inapp:true},chat:{enterSend:true,readReceipts:true,autoTranscribe:true,autoRead:false},seller:{shipPickup:true,shipBike:true,shipWaybill:true,whatsapp:''},wallet:{gateway:'paystack'},creator:{tips:true,comments:true},twoStep:false,biometric:false});
+async function createWallet(u){let w=wallet(u);if(!w)w=await dbInsert('wallets',{id:'w-'+u,uid:u,owner:u,balance:0,points:0,payout:null});return w}
+async function registerUser(f){
+  const email=(f.email||'').trim().toLowerCase(),phone=(f.phone||'').replace(/[^\d+]/g,'');
+  if((f.name||'').trim().split(/\s+/).length<2)throw Error('Please enter your full name (first and last name).');
+  if(!/^\S+@\S+\.\S+$/.test(email))throw Error('Enter a valid email address.');
+  if(phone.replace(/\D/g,'').length<8)throw Error('Enter a valid phone number with country code, e.g. +2348012345678.');
+  if((f.password||'').length<8)throw Error('Password must be at least 8 characters.');
+  if(!S.tmp.avatar)throw Error('A clear profile photo is required (this keeps SHOPCHATTA free of fake accounts).');
+  if(C.profiles.some(p=>p.email===email))throw Error('This email is already registered. Try logging in.');
+  if(C.profiles.some(p=>p.phone===phone))throw Error('This phone number is already registered.');
+  let id=uid(),pwHash=null;
+  if(sb){const {data,error}=await sb.auth.signUp({email,password:f.password,options:{data:{full_name:f.name}}});if(error)throw error;if(!data.user)throw Error('Could not create the account.');id=data.user.id}else pwHash=await sha(f.password);
+  const real=C.profiles.filter(p=>!p.seed);
+  const admin=(CONFIG.ADMIN_EMAIL&&email===CONFIG.ADMIN_EMAIL.trim().toLowerCase())||(!CONFIG.ADMIN_EMAIL&&real.length===0);
+  const p=await dbInsert('profiles',{id,owner:id,name:f.name.trim(),email,phone,photo:S.tmp.avatar,country:f.country||S.country,role:admin?'admin':'user',status:'active',emailVerified:false,phoneVerified:false,verified:false,idVerified:false,sellerStatus:'none',pro:false,rating:0,ratingCount:0,code:'SC-'+id.replace(/-/g,'').slice(0,6).toUpperCase(),referredBy:null,bio:'',lastSeen:now(),pwHash,settings:defaultSettings(),currency:S.cur,lang:S.lang,theme:S.theme,storeName:'',storeOpen:true,storeLocation:''});
+  await createWallet(id);
+  const refCode=(f.ref||S.ref||'').trim().toUpperCase();
+  if(refCode){const r=C.profiles.find(x=>x.code===refCode&&x.id!==id);if(r){await dbUpdate('profiles',id,{referredBy:r.id});await dbInsert('referrals',{referrer:r.id,referred:id,owner:r.id,status:'pending',bonusPaid:false})}}
+  S.tmp.avatar=null;
+  return startVerification(p)}
+async function startVerification(p){
+  S.pending={uid:p.id,email:genCode(),phone:genCode()};
+  await dbInsert('outbox',{uid:p.id,owner:p.id,channel:'email',to:p.email,subject:'Your SHOPCHATTA verification code',message:'Your email verification code is '+S.pending.email,status:'queued'});
+  await dbInsert('outbox',{uid:p.id,owner:p.id,channel:'sms',to:p.phone,message:'SHOPCHATTA code: '+S.pending.phone,status:'queued'});
+  return p}
+async function verifyAccount(ec,pc){const p=S.pending;if(!p)throw Error('No verification in progress.');
+  if(ec.trim()!==p.email)throw Error('The email code is not correct.');if(pc.trim()!==p.phone)throw Error('The phone code is not correct.');
+  const u=await dbUpdate('profiles',p.uid,{emailVerified:true,phoneVerified:true});S.pending=null;return u}
+async function loginUser(email,password){
+  email=(email||'').trim().toLowerCase();let p;
+  if(sb){const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;
+    p=C.profiles.find(x=>x.id===data.user.id)||C.profiles.find(x=>x.email===email);
+    if(!p){p=await dbInsert('profiles',{id:data.user.id,owner:data.user.id,name:(data.user.user_metadata&&data.user.user_metadata.full_name)||email.split('@')[0],email,phone:'',photo:null,country:S.country,role:(CONFIG.ADMIN_EMAIL&&email===CONFIG.ADMIN_EMAIL.trim().toLowerCase())?'admin':'user',status:'active',emailVerified:true,phoneVerified:false,verified:false,idVerified:false,sellerStatus:'none',pro:false,rating:0,ratingCount:0,code:'SC-'+data.user.id.replace(/-/g,'').slice(0,6).toUpperCase(),bio:'',lastSeen:now(),settings:defaultSettings(),currency:S.cur,lang:S.lang,theme:S.theme,storeName:'',storeOpen:true});await createWallet(p.id)}}
+  else{p=C.profiles.find(x=>x.email===email&&!x.seed);if(!p||p.pwHash!==await sha(password))throw Error('Wrong email or password.')}
+  if(p.status==='banned'){if(sb)await sb.auth.signOut();throw Error('This account has been banned for breaking SHOPCHATTA rules.')}
+  if(p.settings&&p.settings.twoStep){const code=genCode();S.twoStep={uid:p.id,code};await dbInsert('outbox',{uid:p.id,owner:p.id,channel:'email',to:p.email,subject:'SHOPCHATTA login code',message:'Your 2-step login code is '+code,status:'queued'});return{needs2fa:true,code}}
+  return finishLogin(p)}
+function finishLogin(p){S.meId=p.id;lsSet('session',p.id);S.unlocked=true;
+  if(p.lang){S.lang=p.lang;lsSet('lang',p.lang)}if(p.theme){S.theme=p.theme;lsSet('theme',p.theme)}if(p.currency){S.cur=p.currency;lsSet('cur',p.currency)}applyTheme();
+  dbUpdate('profiles',p.id,{lastSeen:now()});return{ok:true,user:p}}
+async function logoutUser(){try{if(sb)await sb.auth.signOut()}catch(e){}S.meId=null;lsSet('session',null);S.unlocked=false;go('home')}
+function applyTheme(){let th=S.theme;if(th==='system')th=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',th);document.documentElement.lang=S.lang==='pcm'?'en':S.lang}
+
+/* ============================ wallet / payments ============================ */
+async function walletAdd(u,usd,type,note,extra={}){let w=wallet(u)||await createWallet(u);await dbUpdate('wallets',w.id,{balance:+((w.balance||0)+usd).toFixed(6)});return dbInsert('transactions',Object.assign({uid:u,owner:u,type,usd,note},extra))}
+function askModal(title,body,okLabel){return new Promise(res=>{modal(`<h3>${title}</h3><div class="mut" style="margin-bottom:14px">${body}</div><div class="row end"><button class="btn btn-o" data-a="cfNo">Cancel</button><button class="btn btn-g" data-a="cfYes">${okLabel||'Confirm'}</button></div>`);S.cf=res})}
+async function payWith(method,usd,note){
+  if(method==='wallet'){const w=wallet(S.meId);if(!w||(w.balance||0)<usd-1e-9)throw Error('Your wallet balance is too low. Top up first or pick another payment method.');await walletAdd(S.meId,-usd,'payment',note);return{ref:'WAL-'+Date.now()}}
+  if(method==='paystack'&&CONFIG.PAYSTACK_KEY){await loadScript('https://js.paystack.co/v1/inline.js');
+    return new Promise((res,rej)=>{const amt=Math.round(fromUSD(usd,'NGN')*100);const h=window.PaystackPop.setup({key:CONFIG.PAYSTACK_KEY,email:me().email,amount:amt,currency:'NGN',ref:'SC'+Date.now(),callback:function(r){res({ref:r.reference})},onClose:function(){rej(Error('Payment cancelled.'))}});h.openIframe()})}
+  const nm={paystack:'Paystack',stripe:'Stripe',paypal:'PayPal'}[method]||method;
+  const ok=await askModal(nm+' checkout (test mode)',`Pay <b>${fmtUSD(usd)}</b> for <i>${esc(note)}</i>.<br><span class="sm">${nm} runs in simulation here. Add your live keys on a secure backend (or <code>CONFIG.PAYSTACK_KEY</code> for Paystack) to take real money.</span>`,'Pay '+fmtUSD(usd));
+  if(!ok)throw Error('Payment cancelled.');return{ref:method.toUpperCase().slice(0,3)+'-'+Date.now()}}
+async function topUp(method,amountDisp){const usd=toUSD(amountDisp,S.cur);if(!(usd>0))throw Error('Enter an amount.');const pay=await payWith(method==='wallet'?'paystack':method,usd,'Wallet top-up');await walletAdd(S.meId,usd,'topup','Wallet top-up via '+method,{ref:pay.ref});toast('Wallet topped up: '+fmtUSD(usd))}
+async function withdraw(amountDisp,bank){const u=me(),usd=toUSD(amountDisp,S.cur),w=wallet(u.id);
+  if(!(usd>0))throw Error('Enter an amount.');if(!w||w.balance<usd-1e-9)throw Error('Not enough balance.');
+  if(usd>=CONFIG.BIG_WITHDRAW_USD&&!u.idVerified)throw Error('Withdrawals of '+fmtUSD(CONFIG.BIG_WITHDRAW_USD)+' or more need ID verification (NIN, Passport or Driver\'s License). Submit your ID in Wallet > Verify ID.');
+  if(!bank||!bank.name||!bank.number)throw Error('Enter your payout bank/mobile-money details.');
+  await dbUpdate('wallets',w.id,{payout:bank});await walletAdd(u.id,-usd,'withdraw','Withdrawal to '+bank.name,{status:'processing'});
+  await sendNotification(u.id,'Withdrawal requested','Your withdrawal of '+fmtUSD(usd)+' is being processed.',{link:'wallet'});toast('Withdrawal requested')}
+async function submitID(type,number){const u=me();if(!type||!number)throw Error('Choose an ID type and enter the number.');if(!S.tmp.idPhoto)throw Error('Upload a photo of the ID.');
+  await dbInsert('verifications',{uid:u.id,owner:u.id,name:u.name,idType:type,idNumber:number,photo:S.tmp.idPhoto,status:'pending'});S.tmp.idPhoto=null;
+  await notifyAdmins('ID verification pending',u.name+' submitted '+type+' for review.','admin');toast('ID submitted — you will be notified after review')}
+async function buyPro(method){const u=me();const usd=CONFIG.PRO_PRICE_USD;const pay=await payWith(method,usd,'SHOPCHATTA Pro (30 days)');
+  const until=new Date(Math.max(Date.now(),u.proUntil?new Date(u.proUntil).getTime():0)+30*864e5).toISOString();
+  await dbUpdate('profiles',u.id,{pro:true,proUntil:until});await dbInsert('transactions',{uid:u.id,owner:u.id,type:'subscription',usd:0,note:'SHOPCHATTA Pro via '+method,ref:pay.ref});
+  await dbInsert('transactions',{uid:'platform',owner:'platform',type:'revenue',usd,note:'Pro subscription'});toast('Welcome to SHOPCHATTA Pro!')}
+async function boostProduct(pid,method){const u=me(),p=C.products.find(x=>x.id===pid);if(!p||p.sellerId!==u.id)throw Error('Not your product.');if(p.status!=='in_stock')throw Error('Only In Stock products can be boosted.');
+  const usd=u.pro?CONFIG.BOOST_PRICE_USD/2:CONFIG.BOOST_PRICE_USD;const pay=await payWith(method,usd,'Boost: '+p.title);
+  await dbUpdate('products',pid,{boostUntil:new Date(Date.now()+7*864e5).toISOString()});await dbInsert('transactions',{uid:'platform',owner:'platform',type:'revenue',usd,note:'Boost: '+p.title,ref:pay.ref});toast('Product boosted for 7 days 🚀')}
+
+/* ============================ products ============================ */
+async function openStore(f){const u=me();if(!f.storeName||f.storeName.trim().length<3)throw Error('Enter a store name (3+ characters).');if(!f.location)throw Error('Enter your location.');
+  await dbUpdate('profiles',u.id,{storeName:f.storeName.trim(),storeLocation:f.location.trim(),sellerStatus:u.role==='admin'?'approved':'pending',storeOpen:true,settings:Object.assign({},u.settings,{seller:Object.assign({},(u.settings||{}).seller,{whatsapp:(f.whatsapp||'').replace(/[^\d]/g,'')})})});
+  if(u.role!=='admin')await notifyAdmins('New seller to approve',u.name+' applied to open "'+f.storeName+'".','admin');
+  ensureStoreChat(u.id);toast(u.role==='admin'?'Store approved — start listing!':'Store submitted. You can save drafts now; publishing starts once Admin approves.')}
+async function uploadProduct(f,id){const u=me();if(!u)throw Error('Please log in.');if(u.status==='banned')throw Error('Account restricted.');
+  if(!f.title||f.title.trim().length<3)throw Error('Enter a product title.');if(!(+f.price>0))throw Error('Enter a price greater than 0.');if(!f.cat)throw Error('Pick a category.');
+  const status=f.status||'in_stock';
+  if(status!=='draft'){if(u.sellerStatus!=='approved')throw Error('Your store must be approved by Admin before you can publish. Save as Draft meanwhile.');if(!S.tmp.photos.length&&!(id&&C.products.find(x=>x.id===id).photos.length))throw Error('Add at least one product photo.')}
+  const data={title:f.title.trim(),desc:f.desc||'',cat:f.cat,cond:f.cond||'new',price:+f.price,cur:f.cur||S.cur,location:f.location||u.storeLocation||'',status};
+  if(id){const o=C.products.find(x=>x.id===id);if(S.tmp.photos.length)data.photos=S.tmp.photos.slice();await dbUpdate('products',id,data);S.tmp.photos=[];toast('Product updated');return o}
+  data.photos=S.tmp.photos.slice();S.tmp.photos=[];
+  const p=await dbInsert('products',Object.assign({owner:u.id,sellerId:u.id,views:0,boostUntil:null},data));toast(status==='draft'?'Saved as draft':'Product is live — free listing, 5% only when it sells');return p}
+function getProducts(fl=S.f){let a=C.products.filter(p=>{const s=U(p.sellerId);if(s&&s.status==='banned')return false;return true});
+  if(fl.status)a=a.filter(p=>p.status===fl.status);else a=a.filter(p=>p.status!=='draft');
+  if(fl.q){const q=fl.q.toLowerCase();a=a.filter(p=>(p.title+' '+p.desc+' '+p.cat).toLowerCase().includes(q))}
+  if(fl.cat)a=a.filter(p=>p.cat===fl.cat);if(fl.cond)a=a.filter(p=>p.cond===fl.cond);
+  if(fl.loc){const l=fl.loc.toLowerCase();a=a.filter(p=>(p.location||'').toLowerCase().includes(l))}
+  const mn=fl.min!==''?toUSD(+fl.min,S.cur):null,mx=fl.max!==''?toUSD(+fl.max,S.cur):null;
+  if(mn!==null)a=a.filter(p=>toUSD(p.price,p.cur)>=mn);if(mx!==null)a=a.filter(p=>toUSD(p.price,p.cur)<=mx);
+  const boosted=p=>p.boostUntil&&new Date(p.boostUntil)>new Date()?1:0;
+  const sorters={new:(x,y)=>new Date(y.created_at)-new Date(x.created_at),low:(x,y)=>toUSD(x.price,x.cur)-toUSD(y.price,y.cur),high:(x,y)=>toUSD(y.price,y.cur)-toUSD(x.price,x.cur)};
+  return a.sort((x,y)=>boosted(y)-boosted(x)||(sorters[fl.sort]||sorters.new)(x,y))}
+const setProductStatus=async(id,st)=>{await dbUpdate('products',id,{status:st});toast('Moved to '+STATUSES[st])};
+
+/* ============================ chat ============================ */
+const pmKey=(a,b,p)=>'pm:'+[a,b].sort().join(':')+':'+(p||'');
+async function createChat(type,o={}){const meId=S.meId;
+  if(type==='private'){const key=pmKey(meId,o.peer,o.productId);let c=C.chats.find(x=>x.key===key);if(c)return c;
+    const peer=U(o.peer);if(peer&&peer.settings&&peer.settings.privacy&&peer.settings.privacy.whoMessages==='followers'&&!isFollowing(o.peer)&&!isFollowing(meId)&&!(o.productId))throw Error('This user only accepts messages from followers.');
+    return dbInsert('chats',{key,type:'private',members:[meId,o.peer],productId:o.productId||null,owner:meId,lastMsg:'',lastAt:now()})}
+  if(type==='support'){const id='support-'+meId;let c=C.chats.find(x=>x.id===id);if(c)return c;return dbInsert('chats',{id,type:'support',name:'SHOPCHATTA Support',members:[meId],owner:meId,lastMsg:'',lastAt:now()})}
+  return null}
+async function ensureStoreChat(sellerId){const id='store-'+sellerId;let c=C.chats.find(x=>x.id===id);if(!c)c=await dbInsert('chats',{id,type:'store',name:dName(sellerId)+' — Customers',storeOwner:sellerId,members:[sellerId],owner:sellerId,lastMsg:'',lastAt:now()});return c}
+async function joinStoreChat(sellerId,userId){const c=await ensureStoreChat(sellerId);if(!c.members.includes(userId))await dbUpdate('chats',c.id,{members:[...c.members,userId]})}
+async function ensureGeneralChats(){const g=[['g-tech','Tech News & Gadgets','Latest in phones, laptops, AI and gadgets.'],['g-biz','Business Tips & Hustle','Grow your tech business: pricing, sourcing, selling.']];for(const [id,name,desc] of g){if(!C.chats.find(c=>c.id===id))await dbInsert('chats',{id,type:'general',name,desc,members:[],lastMsg:'',lastAt:now()})}}
+const canSee=c=>{if(!c)return false;if(c.type==='general')return true;if(isAdmin()&&c.type==='support')return true;return(c.members||[]).includes(S.meId)};
+async function sendMessage(chatId,text,extra={}){const u=me();if(!u)throw Error('Please log in.');const c=C.chats.find(x=>x.id===chatId);if(!c||!canSee(c))throw Error('You are not a member of this chat.');
+  text=(text||'').trim();if(!text&&!extra.audio)throw Error('Type a message.');
+  const m=await dbInsert('messages',Object.assign({chatId,owner:u.id,from:u.id,fromName:u.name,text,kind:extra.kind||'text'},extra));
+  await dbUpdate('chats',chatId,{lastMsg:extra.audio?'🎤 Voice note':text.slice(0,80),lastAt:now()});
+  if(c.type==='private'){const peer=c.members.find(x=>x!==u.id);if(peer)await sendNotification(peer,first(u.name)+' sent you a message',extra.audio?'🎤 Voice note':text,{link:'chat/'+c.id})}
+  if(c.type==='support'){if(isAdmin()&&c.members[0]!==u.id)await sendNotification(c.members[0],'SHOPCHATTA Support replied',text.slice(0,120),{link:'chat/'+c.id});else if(!isAdmin()){await notifyAdmins('Support message from '+first(u.name),text.slice(0,120),'chat/'+c.id);setTimeout(()=>botReply(c.id,text),900)}}
+  return m}
+const FAQ_BOT=[[/escrow|protect|safe/,'Your money is held by SHOPCHATTA until you confirm the item arrived. Open Orders to confirm or dispute.'],[/refund|fake|scam/,'Open Orders > Dispute & Refund, tell us what happened and our team will review it. Money in escrow is refunded if the item is fake.'],[/commission|fee|charge/,'Listing is free. SHOPCHATTA takes 5% only when a sale completes.'],[/withdraw|payout/,'Go to Wallet > Withdraw. Large withdrawals need ID verification (NIN, Passport or Driver\'s License).'],[/creator|earn|monet/,'To start earning as a creator you need 100 followers, 5 posts and 1,000 total views.'],[/password|login|2-step|code/,'Go to Settings > Account & Security to change your password or turn on 2-Step verification.']];
+async function botReply(chatId,text){const hit=FAQ_BOT.find(([r])=>r.test(text.toLowerCase()));await dbInsert('messages',{chatId,owner:'bot',from:'bot',fromName:'SHOPCHATTA Support',text:hit?hit[1]:'Thanks! A member of the SHOPCHATTA team will reply here shortly.',kind:'text'});if(S.route==='chat')renderChatBody()}
+
+/* voice <-> text */
+const VT={r:null,text:'',active:false};
+function voiceToText(on){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(on){VT.text='';if(!SR)return'';try{const r=new SR();r.lang=SPEECH[S.lang]||'en-US';r.continuous=true;r.interimResults=true;let fin='';
+    r.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const tx=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=tx+' ';else interim+=tx}VT.text=(fin+interim).trim()};
+    r.onerror=()=>{};r.onend=()=>{if(VT.active){try{r.start()}catch(e){}}};VT.r=r;VT.active=true;r.start()}catch(e){}return''}
+  VT.active=false;try{VT.r&&VT.r.stop()}catch(e){}return VT.text}
+function textToVoice(text){if(!('speechSynthesis' in window)){toast('Text-to-voice is not supported on this browser.','err');return}
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text||''));u.lang=SPEECH[S.lang]||'en-US';const v=speechSynthesis.getVoices().find(x=>x.lang&&x.lang.toLowerCase().startsWith((u.lang||'en').slice(0,2).toLowerCase()));if(v)u.voice=v;speechSynthesis.speak(u)}
+const REC={on:false,want:false,mr:null,chunks:[],stream:null,t0:0};
+async function startRec(){if(REC.on||REC.want)return;REC.want=true;
+  try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});if(!REC.want){stream.getTracks().forEach(x=>x.stop());return}
+    REC.stream=stream;REC.chunks=[];REC.mr=new MediaRecorder(stream);REC.mr.ondataavailable=e=>{if(e.data.size)REC.chunks.push(e.data)};REC.mr.start();REC.t0=Date.now();REC.on=true;voiceToText(true);
+    const b=$('#micBtn');if(b)b.classList.add('rec');const h=$('#recHint');if(h)h.classList.remove('hide');setTimeout(()=>{if(REC.on)stopRec()},60000)}
+  catch(e){REC.want=false;toast('Allow microphone access to send voice notes.','err')}}
+function stopRec(){REC.want=false;if(!REC.on)return;REC.on=false;const b=$('#micBtn');if(b)b.classList.remove('rec');const h=$('#recHint');if(h)h.classList.add('hide');
+  const mr=REC.mr,chatId=S.chatId;voiceToText(false);
+  mr.onstop=async()=>{REC.stream.getTracks().forEach(x=>x.stop());const dur=(Date.now()-REC.t0)/1000;if(dur<0.8){toast('Hold the mic a little longer to record.');return}
+    await sleep(700);const blob=new Blob(REC.chunks,{type:mr.mimeType||'audio/webm'});if(blob.size>1.4e6){toast('Voice note too long (max ~1 min).','err');return}
+    try{const audio=await blobToDataURL(blob);await sendMessage(chatId,'',{kind:'voice',audio,transcript:VT.text||'',dur:Math.round(dur)});renderChatBody()}catch(e){toast(e.message,'err')}};
+  try{mr.stop()}catch(e){}}
+
+/* ============================ escrow, orders, disputes, ratings ============================ */
+async function buyProduct(pid,o){const u=me();if(!u)throw Error('Please log in first.');needVerified();
+  const p=C.products.find(x=>x.id===pid);if(!p||p.status!=='in_stock')throw Error('This product is no longer available.');if(p.sellerId===u.id)throw Error("You can't buy your own product.");
+  const seller=U(p.sellerId);if(seller&&seller.storeOpen===false)throw Error('This store is currently closed.');
+  const usd=toUSD(p.price,p.cur);const pay=await payWith(o.method,usd,'Escrow payment: '+p.title);
+  return processEscrow(null,'hold',{p,u,o,usd,pay})}
+async function processEscrow(orderId,action,ctx={}){
+  if(action==='hold'){const {p,u,o,usd,pay}=ctx;const commission=+(p.price*CONFIG.COMMISSION).toFixed(2);
+    const ord=await dbInsert('orders',{owner:u.id,buyer:u.id,buyerName:u.name,seller:p.sellerId,sellerName:dName(p.sellerId),productId:p.id,title:p.title,photo:(p.photos&&p.photos[0])||null,cat:p.cat,amount:p.price,cur:p.cur,usd,commission,sellerNet:+(p.price-commission).toFixed(2),delivery:o.delivery,address:o.address||'',method:o.method,payRef:pay.ref,status:'escrow',track:[{s:'Ordered',t:now()}]});
+    await dbUpdate('products',p.id,{status:'reserved',reservedBy:u.id});await joinStoreChat(p.sellerId,u.id);
+    await sendNotification(p.sellerId,'New order 🎉','Congratulations! '+first(u.name)+' bought your '+p.title+' for '+fmt(p.price,p.cur)+'. Payment is safe in escrow — ship it now.',{link:'orders'});
+    toast('Payment secured in escrow ✔');return ord}
+  const o=C.orders.find(x=>x.id===orderId);if(!o)throw Error('Order not found.');
+  if(action==='release'){if(['completed','refunded'].includes(o.status))return o;
+    await dbUpdate('orders',o.id,{status:'completed',completedAt:now(),track:[...o.track,{s:'Confirmed',t:now()}]});
+    const net=toUSD(o.sellerNet,o.cur),com=toUSD(o.commission,o.cur);
+    await walletAdd(o.seller,net,'escrow_release','Sale: '+o.title,{orderId:o.id});
+    await dbInsert('transactions',{uid:'platform',owner:'platform',type:'commission',usd:com,note:'5% commission: '+o.title,orderId:o.id});
+    await dbUpdate('products',o.productId,{status:'sold'});
+    const bw=await createWallet(o.buyer);await dbUpdate('wallets',bw.id,{points:(bw.points||0)+Math.max(1,Math.round(o.usd))});
+    await sendNotification(o.seller,'Payment released 💰',first(o.buyerName)+' confirmed delivery. '+fmt(o.sellerNet,o.cur)+' (after 5% commission of '+fmt(o.commission,o.cur)+') is now in your wallet.',{link:'wallet'});
+    await applyReferralBonus(o.buyer);await applyReferralBonus(o.seller);return o}
+  if(action==='refund'){if(['completed','refunded'].includes(o.status))return o;
+    await dbUpdate('orders',o.id,{status:'refunded',track:[...o.track,{s:'Refunded',t:now()}]});await walletAdd(o.buyer,o.usd,'refund','Refund: '+o.title,{orderId:o.id});
+    const p=C.products.find(x=>x.id===o.productId);if(p&&p.status==='reserved')await dbUpdate('products',p.id,{status:'in_stock',reservedBy:null});
+    await sendNotification(o.buyer,'Refund issued','Your payment of '+fmt(o.amount,o.cur)+' for '+o.title+' was refunded to your SHOPCHATTA wallet.',{link:'wallet'});
+    await sendNotification(o.seller,'Order refunded','The order for '+o.title+' was refunded to the buyer.',{link:'orders'});return o}}
+const releaseEscrow=id=>processEscrow(id,'release');
+async function updateTracking(id,step){const o=C.orders.find(x=>x.id===id);if(!o)return;await dbUpdate('orders',id,{status:step==='Shipped'?'shipped':step==='Delivered'?'delivered':o.status,track:[...o.track,{s:step,t:now()}]});
+  await sendNotification(o.buyer,'Order '+step.toLowerCase(),'Your '+o.title+' is now "'+step+'".',{link:'orders'});toast('Marked '+step)}
+async function applyReferralBonus(userId){const r=C.referrals.find(x=>x.referred===userId&&!x.bonusPaid);if(!r)return;
+  await dbUpdate('referrals',r.id,{bonusPaid:true,status:'paid'});await walletAdd(r.referrer,CONFIG.REF_BONUS_USD,'bonus','Referral bonus: '+dName(userId));await walletAdd(userId,CONFIG.REF_BONUS_USD,'bonus','Welcome referral bonus');
+  await sendNotification(r.referrer,'Referral bonus 🎁','Your friend '+first(dName(userId))+' completed a first sale/purchase. You earned '+fmtUSD(CONFIG.REF_BONUS_USD)+'!',{link:'wallet'})}
+async function referUser(){const u=me();const link=location.href.split('#')[0]+'?ref='+u.code;const text='Join me on SHOPCHATTA — Shop. Chat. Earn. All In One Place. Use my code '+u.code+': '+link;
+  if(navigator.share){try{await navigator.share({title:'SHOPCHATTA',text,url:link});return}catch(e){}}
+  try{await navigator.clipboard.writeText(text);toast('Invite link copied!')}catch(e){modal(`<h3>Invite friends</h3><p class="mut">Copy and share:</p><textarea readonly>${esc(text)}</textarea><div class="row end"><button class="btn" data-a="close">Close</button></div>`)}}
+async function rateSeller(orderId,stars_,text){const o=C.orders.find(x=>x.id===orderId);if(!o||o.buyer!==S.meId)throw Error('Only the buyer can rate.');if(o.status!=='completed')throw Error('You can rate after the order is completed.');if(C.reviews.some(r=>r.orderId===orderId))throw Error('You already rated this order.');if(!(stars_>=1&&stars_<=5))throw Error('Choose 1 to 5 stars.');
+  await dbInsert('reviews',{orderId,owner:S.meId,seller:o.seller,buyer:S.meId,buyerName:me().name,stars:stars_,text:(text||'').trim(),title:o.title});
+  const rs=C.reviews.filter(r=>r.seller===o.seller);const avg=rs.reduce((a,r)=>a+r.stars,0)/rs.length;await dbUpdate('profiles',o.seller,{rating:+avg.toFixed(2),ratingCount:rs.length});
+  await sendNotification(o.seller,'New review '+stars(stars_),first(me().name)+' rated you '+stars_+'/5'+(text?': '+text.slice(0,80):''),{link:'store/'+o.seller});toast('Thanks for your review!')}
+async function createDispute(orderId,reason){const o=C.orders.find(x=>x.id===orderId);if(!o)throw Error('Order not found.');if(!reason||reason.trim().length<10)throw Error('Please describe the problem (at least 10 characters).');
+  await dbInsert('disputes',{orderId,owner:S.meId,buyer:o.buyer,seller:o.seller,title:o.title,amount:o.amount,cur:o.cur,reason:reason.trim(),openedBy:S.meId,status:'open'});
+  await dbUpdate('orders',orderId,{status:'disputed',track:[...o.track,{s:'Dispute opened',t:now()}]});
+  await sendNotification(o.seller==S.meId?o.buyer:o.seller,'Dispute opened','A dispute was opened on "'+o.title+'". Funds stay in escrow until Admin decides.',{link:'orders'});await notifyAdmins('New dispute','Dispute on '+o.title,'admin');toast('Dispute opened — funds remain in escrow')}
+
+/* ============================ creator ============================ */
+const creatorStats=u=>{const posts=C.posts.filter(p=>p.uid===u);return{followers:C.follows.filter(f=>f.following===u).length,posts:posts.length,views:posts.reduce((a,p)=>a+(p.views||0),0),likes:posts.reduce((a,p)=>a+(p.likes||[]).length,0)}};
+const isMonetised=u=>{const s=creatorStats(u);return s.followers>=100&&s.posts>=5&&s.views>=1000};
+async function createPost(file,caption){const u=me();needVerified();if(!file)throw Error('Choose a photo or video.');const url=await storeMedia(file);
+  return dbInsert('posts',{uid:u.id,owner:u.id,kind:file.type.startsWith('video')?'video':'image',url,caption:(caption||'').trim(),likes:[],comments:[],shares:0,views:0})}
+const trackView=p=>{if(S.viewed.has(p.id)||p.uid===S.meId)return;S.viewed.add(p.id);S.viewQ.push(p.id)};
+async function flushViews(){const q=S.viewQ.splice(0);for(const id of q){const p=C.posts.find(x=>x.id===id);if(!p)continue;await dbUpdate('posts',id,{views:(p.views||0)+1});if(isMonetised(p.uid))await walletAdd(p.uid,0.0004,'ad_earn','Ad revenue share (views)')}}
+async function toggleFollow(id){if(!me()){showAuth('login');return}if(id===S.meId)return;const f=C.follows.find(x=>x.follower===S.meId&&x.following===id);
+  if(f){await dbDelete('follows',f.id)}else{await dbInsert('follows',{follower:S.meId,following:id,owner:S.meId});await sendNotification(id,'New follower',first(me().name)+' started following you.',{link:'store/'+S.meId})}}
+async function tipCreator(creatorId,amountDisp,method){const usd=toUSD(amountDisp,S.cur);if(!(usd>0))throw Error('Enter a tip amount.');await payWith(method,usd,'Tip to '+dName(creatorId));
+  await walletAdd(creatorId,usd*0.95,'tip','Tip from '+first(me().name));await dbInsert('transactions',{uid:'platform',owner:'platform',type:'commission',usd:usd*0.05,note:'5% tip fee'});await sendNotification(creatorId,'You got a tip 💚',first(me().name)+' tipped you '+fmtUSD(usd)+'.',{link:'wallet'});toast('Tip sent!')}
+
+/* ============================ misc actions ============================ */
+function needVerified(){const u=me();if(!u)throw Error('Please log in first.');if(!u.emailVerified||!u.phoneVerified){startVerification(u).then(()=>{showVerify()});throw Error('Verify your email and phone first to use SHOPCHATTA safely.')}}
+async function toggleFav(pid){if(!me()){showAuth('login');return}const f=C.favourites.find(x=>x.uid===S.meId&&x.productId===pid);if(f)await dbDelete('favourites',f.id);else await dbInsert('favourites',{uid:S.meId,owner:S.meId,productId:pid});render()}
+async function reportItem(kind,targetId,reason){if(!me()){showAuth('login');return}await dbInsert('reports',{owner:S.meId,by:S.meId,byName:me().name,kind,targetId,reason,status:'open'});await notifyAdmins('New report',kind+' reported: '+reason.slice(0,80),'admin');toast('Report sent. Thank you for keeping SHOPCHATTA safe.')}
+const waNumber=u=>{if(!u)return'';const s=u.settings||{};const biz=s.seller&&s.seller.whatsapp;if(biz)return biz;if(s.privacy&&s.privacy.showPhone&&u.phone)return u.phone.replace(/\D/g,'');return''};
+const waLink=(num,text)=>num?'https://wa.me/'+num+'?text='+encodeURIComponent(text||''):'';
+async function setSetting(path,val){const u=me();if(!u)return;const s=JSON.parse(JSON.stringify(u.settings||defaultSettings()));const keys=path.split('.');let o=s;keys.slice(0,-1).forEach(k=>{o[k]=o[k]||{};o=o[k]});o[keys[keys.length-1]]=val;await dbUpdate('profiles',u.id,{settings:s})}
+async function enableBiometric(){if(!window.PublicKeyCredential)throw Error('This browser/device does not support Face ID or fingerprint unlock.');
+  const ok=PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable():false;if(!ok)throw Error('No Face ID / fingerprint sensor found on this device.');
+  const u=me();const cred=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'SHOPCHATTA'},user:{id:new TextEncoder().encode(u.id),name:u.email,displayName:u.name},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},timeout:60000}});
+  lsSet('bio_'+u.id,btoa(String.fromCharCode(...new Uint8Array(cred.rawId))));await setSetting('biometric',true)}
+async function unlockBiometric(){const u=me();const raw=lsGet('bio_'+u.id,null);if(!raw)throw Error('Biometric key missing on this device — log in again.');const id=Uint8Array.from(atob(raw),c=>c.charCodeAt(0));
+  await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),allowCredentials:[{type:'public-key',id}],userVerification:'required',timeout:60000}});S.unlocked=true}
+async function deleteAccount(){const u=me();if(!u)return;const ids=C.products.filter(p=>p.sellerId===u.id).map(p=>p.id);for(const id of ids)await dbDelete('products',id);
+  await dbDelete('profiles',u.id);try{if(sb)await sb.auth.signOut()}catch(e){}S.meId=null;lsSet('session',null);toast('Your account was deleted.');go('home')}
+function exportData(){const u=me();const mine={};TABLES.forEach(tb=>{mine[tb]=C[tb].filter(r=>[r.owner,r.uid,r.from,r.buyer,r.seller,r.id].includes(u.id)).map(r=>{const c=Object.assign({},r);delete c.pwHash;return c})});const b=new Blob([JSON.stringify(mine,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='shopchatta-my-data.json';a.click()}
+const SETUP_SQL=()=>TABLES.map(tb=>`create table if not exists public.${tb} (id text primary key, created_at timestamptz default now(), owner text, data jsonb not null default '{}'::jsonb);\nalter table public.${tb} enable row level security;\ndrop policy if exists "sc_${tb}_all" on public.${tb};\ncreate policy "sc_${tb}_all" on public.${tb} for all to anon, authenticated using (true) with check (true);`).join('\n')+`\n\n-- media bucket for product photos / creator videos\ninsert into storage.buckets (id,name,public) values ('${CONFIG.MEDIA_BUCKET}','${CONFIG.MEDIA_BUCKET}',true) on conflict (id) do nothing;\ndrop policy if exists "sc_media_read" on storage.objects;\ndrop policy if exists "sc_media_write" on storage.objects;\ncreate policy "sc_media_read" on storage.objects for select using (bucket_id='${CONFIG.MEDIA_BUCKET}');\ncreate policy "sc_media_write" on storage.objects for insert to anon, authenticated with check (bucket_id='${CONFIG.MEDIA_BUCKET}');\n\n-- realtime chat (run once; ignore "already member" errors on re-run)\nalter publication supabase_realtime add table ${TABLES.map(x=>'public.'+x).join(', ')};`;
+
+/* =====================================================================
+   UI — shell, routing, modals, auth screens
+   ===================================================================== */
+const R={},A={},F={},FILE={};
+const empty=(em,msg,btn)=>`<div class="empty"><div class="em">${em}</div><p>${msg}</p>${btn||''}</div>`;
+function modal(html,cls=''){$('#modal').innerHTML=`<div class="ov" data-a="closeOv"><div class="sheet ${cls}">${html}</div></div>`}
+function closeModal(){const m=$('#modal');if(m.firstChild)m.innerHTML='';if(S.cf){const f=S.cf;S.cf=null;f(false)}}
+const needLogin=()=>{if(!me()){showAuth('login');return true}return false};
+const LOGIN_ROUTES=['sell','chats','chat','orders','wallet','favs','settings','admin','notifs'];
+
+function go(route,arg,push=true){S.route=route;S.arg=arg||null;closeModal();if(push){try{history.pushState(null,'','#'+route+(arg?'/'+arg:''))}catch(e){}}render();window.scrollTo(0,0)}
+window.addEventListener('popstate',()=>{const h=location.hash.slice(1).split('/');S.route=h[0]||'home';S.arg=h[1]||null;render()});
+
+function topHTML(){const m=me();const unread=m?C.notifications.filter(n=>n.uid===m.id&&!n.read).length:0;
+  return`<div class="brand" data-a="nav" data-r="home">${logo(34)}<span>SHOP<b>CHATTA</b></span></div><div class="sp"></div>
+  <button class="ibtn" data-a="curPick" title="Currency">${esc(S.cur)}</button>
+  ${m?`<button class="ibtn" data-a="nav" data-r="notifs" aria-label="Notifications">${ic('bell')}${unread?`<span class="badge">${unread>9?'9+':unread}</span>`:''}</button><button class="ibtn" data-a="nav" data-r="menu" style="padding:0 3px" aria-label="Account">${avatar(m,34)}</button>`:`<button class="ibtn" data-a="auth" data-m="login">${t('login')}</button>`}`}
+function navHTML(){const r=S.route;const on=(...x)=>x.includes(r)?'on':'';
+  return`<button class="${on('home')}" data-a="nav" data-r="home">${ic('home')}<span>${t('home')}</span></button>
+  <button class="${on('market','product','store')}" data-a="nav" data-r="market">${ic('bag')}<span>${t('market')}</span></button>
+  <button class="sellbtn ${on('sell')}" data-a="nav" data-r="sell"><span class="plus">${ic('plus')}</span><span>${t('sell')}</span></button>
+  <button class="${on('chats','chat')}" data-a="nav" data-r="chats">${ic('chat')}<span>${t('chats')}</span></button>
+  <button class="${on('menu','settings','wallet','orders','creator','favs','admin','help','notifs')}" data-a="nav" data-r="menu">${ic('menu')}<span>${t('menu')}</span></button>`}
+
+function render(){
+  let r=S.route;
+  if(LOGIN_ROUTES.includes(r)&&!me()){S.route=r='home';setTimeout(()=>showAuth('login'),50)}
+  if(r==='admin'&&!isAdmin()){S.route=r='home'}
+  const m=me();
+  if(m&&m.settings&&m.settings.biometric&&!S.unlocked&&window.PublicKeyCredential&&lsGet('bio_'+m.id,null)){$('#top').innerHTML=topHTML();$('#view').innerHTML=`<div class="card" style="text-align:center;margin-top:40px">${logo(70)}<h2 style="margin-top:10px">SHOPCHATTA is locked</h2><p class="mut">Use Face ID / fingerprint to continue.</p><div class="row" style="justify-content:center;margin-top:12px"><button class="btn btn-g" data-a="unlock">Unlock</button><button class="btn btn-o" data-a="logout">Log out</button></div></div>`;$('#nav').innerHTML='';return}
+  $('#top').innerHTML=topHTML();
+  let html;try{html=(R[r]||R.home)()}catch(e){console.error(e);html=empty('⚠️','Something went wrong showing this page.')}
+  $('#view').innerHTML=html;$('#nav').innerHTML=navHTML();
+  if(r==='chat'){renderChatBody();setTimeout(()=>{const i=$('#chatInput');if(i&&innerWidth>700)i.focus()},50)}
+  if(S.viewQ.length)setTimeout(flushViews,1200);
+}
+
+/* ---------- auth screens ---------- */
+function showAuth(mode='login'){
+  const countries=Object.keys(C2C);let dn;try{dn=new Intl.DisplayNames(['en'],{type:'region'})}catch(e){}
+  const opts=countries.map(c=>[c,dn?dn.of(c):c]).sort((a,b)=>a[1].localeCompare(b[1])).map(([c,n])=>`<option value="${c}" ${c===S.country?'selected':''}>${esc(n)}</option>`).join('');
+  S.tmp.avatar=null;
+  if(mode==='login'){modal(`<div class="authwrap"><div style="text-align:center">${logo(64)}<h2 style="margin-top:6px">${t('welcome')} 👋</h2><p class="mut">${t('slogan')}</p></div>
+  <form data-f="login"><label>Email</label><input name="email" type="email" required autocomplete="email"><label>Password</label><input name="password" type="password" required autocomplete="current-password">
+  <button class="btn btn-g btn-block" type="submit" style="margin-top:14px">${t('login')}</button></form>
+  <div class="row sb" style="margin-top:12px"><button class="btn btn-o btn-s" data-a="auth" data-m="register">Create account</button><button class="btn btn-o btn-s" data-a="forgot">Forgot password?</button></div></div>`)}
+  else{modal(`<div class="authwrap"><div style="text-align:center">${logo(54)}<h2 style="margin-top:6px">Create your account</h2><p class="mut">Verified members only — no fake accounts.</p></div>
+  <form data-f="register"><div class="avpick" data-a="pickAvatar" id="avPrev">+ Add profile photo</div><input type="file" id="avFile" accept="image/*" capture="user" data-file="avatar" class="hide">
+  <label>Full name</label><input name="name" required placeholder="e.g. Emmanuel Okon" autocomplete="name"><label>Phone (with country code)</label><input name="phone" type="tel" required placeholder="+2348012345678" autocomplete="tel">
+  <label>Email</label><input name="email" type="email" required autocomplete="email"><label>Country</label><select name="country">${opts}</select><label>Password (8+ characters)</label><input name="password" type="password" minlength="8" required autocomplete="new-password">
+  <label>Referral code (optional)</label><input name="ref" value="${esc(S.ref||'')}" placeholder="SC-XXXXXX"><button class="btn btn-g btn-block" type="submit" style="margin-top:14px">Sign up</button></form>
+  <div class="row" style="justify-content:center;margin-top:10px"><button class="btn btn-o btn-s" data-a="auth" data-m="login">I already have an account</button></div></div>`)}}
+function showVerify(){const p=S.pending;if(!p)return;const u=U(p.uid);
+  modal(`<h3>Verify your phone & email</h3><p class="mut">We sent a 6-digit code to <b>${esc(u?u.email:'')}</b> and to <b>${esc(u?u.phone:'')}</b>.</p>
+  ${CONFIG.DEMO_CODES?`<div class="warnbar">Demo mode: no live SMS/email sender is connected yet, so your codes are shown here — Email <b>${p.email}</b> · Phone <b>${p.phone}</b>.</div>`:''}
+  <form data-f="verify"><label>Email code</label><input name="ec" inputmode="numeric" maxlength="6" required><label>Phone code</label><input name="pc" inputmode="numeric" maxlength="6" required><button class="btn btn-g btn-block" type="submit" style="margin-top:14px">Verify & continue</button></form>`)}
+function show2FA(code){modal(`<h3>2-Step verification</h3><p class="mut">Enter the 6-digit code sent to your email.</p>${CONFIG.DEMO_CODES?`<div class="warnbar">Demo code: <b>${code}</b></div>`:''}<form data-f="twofa"><input name="code" inputmode="numeric" maxlength="6" required autofocus><button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Confirm</button></form>`)}
+F.login=async f=>{const r=await loginUser(f.email,f.password);if(r.needs2fa){show2FA(r.code);return}closeModal();afterLogin()};
+function afterLogin(){const u=me();toast('Welcome back, '+first(u.name)+'! 👋');if(!u.emailVerified||!u.phoneVerified){startVerification(u).then(showVerify)}render()}
+F.twofa=async f=>{if(!S.twoStep||f.code.trim()!==S.twoStep.code)throw Error('Wrong code.');const p=U(S.twoStep.uid);S.twoStep=null;finishLogin(p);closeModal();afterLogin()};
+F.register=async f=>{const p=await registerUser(f);closeModal();showVerify();if(p.role==='admin')toast('You are the Admin 👑')};
+F.verify=async f=>{const pid=S.pending&&S.pending.uid;await verifyAccount(f.ec,f.pc);if(!S.meId&&pid)finishLogin(U(pid));closeModal();toast('Verified! Welcome to SHOPCHATTA 🎉');render()};
+A.forgot=async()=>{const email=prompt('Enter your account email');if(!email)return;if(sb){const {error}=await sb.auth.resetPasswordForEmail(email.trim());if(error)throw error;toast('Password reset email sent.')}else toast('Local demo mode: password reset needs Supabase email. Create a new account or clear data.','err')};
+A.pickAvatar=()=>$('#avFile').click();
+FILE.avatar=async el=>{const f=el.files[0];if(!f)return;S.tmp.avatar=await fileToDataURL(f,320,.8);const p=$('#avPrev');if(p)p.innerHTML=`<img src="${S.tmp.avatar}" alt="">`};
+
+/* ---------- modals: currency, confirm ---------- */
+A.curPick=()=>{modal(`<h3>Choose currency</h3><p class="mut sm">${CURS.length} currencies · prices convert automatically · auto-detected: ${esc(S.country)}</p><input id="curQ" placeholder="Search (NGN, Naira, USD…)" data-i="curq"><div id="curList" style="margin-top:8px">${curList('')}</div>`)};
+const CUR_NAMES=(()=>{try{const d=new Intl.DisplayNames(['en'],{type:'currency'});return c=>{try{return d.of(c)||c}catch(e){return c}}}catch(e){return c=>c}})();
+function curList(q){q=q.toLowerCase();return CURS.filter(c=>!q||c.toLowerCase().includes(q)||CUR_NAMES(c).toLowerCase().includes(q)).map(c=>`<div class="li" data-a="setCur" data-c="${c}"><b style="width:56px">${esc(SYM[c]||c)}</b><div class="grow">${c} <span class="mut">${esc(CUR_NAMES(c))}</span></div>${c===S.cur?'✔':''}</div>`).join('')||'<p class="mut">No match</p>'}
+A.setCur=async el=>{S.cur=el.dataset.c;lsSet('cur',S.cur);if(me())await dbUpdate('profiles',S.meId,{currency:S.cur});closeModal();render()};
+A.cfYes=()=>{const f=S.cf;S.cf=null;$('#modal').innerHTML='';f&&f(true)};
+A.cfNo=()=>{closeModal()};
+A.close=()=>closeModal();
+A.closeOv=(el,e)=>{if(e.target===el)closeModal()};
+A.nav=el=>go(el.dataset.r,el.dataset.id);
+A.auth=el=>showAuth(el.dataset.m);
+A.logout=()=>logoutUser();
+A.unlock=async()=>{await unlockBiometric();render()};
+
+/* ---------- common components ---------- */
+function pcard(p){const boosted=p.boostUntil&&new Date(p.boostUntil)>new Date();const s=U(p.sellerId);
+  return`<div class="pc" data-a="openProduct" data-id="${p.id}"><div class="pimg"><img loading="lazy" src="${esc(imgOf(p))}" alt="${esc(p.title)}">${boosted?'<span class="tag g">🚀 Boosted</span>':`<span class="tag">${esc(CONDS[p.cond]||'')}</span>`}${p.status!=='in_stock'?`<span class="tag s">${STATUSES[p.status]}</span>`:''}<button class="fv ${isFav(p.id)?'on':''}" data-a="fav" data-id="${p.id}" aria-label="Favourite">${ic('heart')}</button></div>
+  <div class="pb"><div class="pp">${pconv(p)}</div><div class="pt">${esc(p.title)}</div><div class="pm">📍 ${esc(p.location||'—')} · ${s?esc(s.storeName||s.name):''}</div></div></div>`}
+A.openProduct=el=>go('product',el.dataset.id);
+A.fav=el=>toggleFav(el.dataset.id);
+function postCard(p){const u=U(p.uid);trackView(p);const liked=(p.likes||[]).includes(S.meId);const cm=p.comments||[];
+  return`<div class="card post"><div class="row" style="margin-bottom:8px" ><span data-a="nav" data-r="store" data-id="${p.uid}" style="cursor:pointer">${avatar(u,38)}</span><div class="grow"><b>${esc(dName(p.uid))}</b> ${badgesOf(p.uid)}<div class="mut sm">${ago(p.created_at)} · 👁 ${p.views||0}</div></div>${p.uid!==S.meId?`<button class="btn btn-s ${isFollowing(p.uid)?'btn-o':''}" data-a="follow" data-id="${p.uid}">${isFollowing(p.uid)?'Following':'Follow'}</button>`:''}</div>
+  ${p.kind==='video'?`<video controls playsinline preload="metadata" src="${esc(p.url)}"></video>`:`<img class="pm" loading="lazy" src="${esc(p.url)}" alt="">`}
+  ${p.caption?`<p style="margin:8px 0">${esc(p.caption)}</p>`:''}
+  <div class="row" style="margin-top:6px"><button class="btn btn-o btn-s" data-a="like" data-id="${p.id}" style="${liked?'color:#e0245e;border-color:#e0245e':''}">${ic('heart')} ${(p.likes||[]).length}</button><button class="btn btn-o btn-s" data-a="toggleCm" data-id="${p.id}">${ic('chat')} ${cm.length}</button><button class="btn btn-o btn-s" data-a="sharePost" data-id="${p.id}">${ic('share')} ${p.shares||0}</button>${p.uid!==S.meId?`<button class="btn btn-o btn-s" data-a="tip" data-id="${p.uid}">💚 Tip</button><button class="btn btn-o btn-s" data-a="report" data-k="post" data-id="${p.id}">${ic('flag')}</button>`:''}</div>
+  <div id="cm-${p.id}" class="hide">${cm.slice(-5).map(c=>`<div class="sm" style="margin-top:6px"><b>${esc(c.name)}</b> ${esc(c.text)}</div>`).join('')}<form data-f="comment" class="row" style="margin-top:8px;flex-wrap:nowrap"><input type="hidden" name="id" value="${p.id}"><input name="text" placeholder="Add a comment…" required><button class="btn btn-s" type="submit">Post</button></form></div></div>`}
+A.toggleCm=el=>{if(needLogin())return;$('#cm-'+el.dataset.id).classList.toggle('hide')};
+A.like=async el=>{if(needLogin())return;const p=C.posts.find(x=>x.id===el.dataset.id);const l=p.likes||[];await dbUpdate('posts',p.id,{likes:l.includes(S.meId)?l.filter(x=>x!==S.meId):[...l,S.meId]});if(!l.includes(S.meId)&&p.uid!==S.meId)sendNotification(p.uid,'New like',first(me().name)+' liked your post.',{link:'creator'});render()};
+F.comment=async f=>{if(needLogin())return;const p=C.posts.find(x=>x.id===f.id);const owner=U(p.uid);if(owner&&owner.settings&&owner.settings.creator&&owner.settings.creator.comments===false)throw Error('Comments are turned off on this post.');
+  await dbUpdate('posts',p.id,{comments:[...(p.comments||[]),{uid:S.meId,name:me().name,text:f.text.slice(0,300),t:now()}]});if(p.uid!==S.meId)sendNotification(p.uid,'New comment',first(me().name)+': '+f.text.slice(0,80),{link:'creator'});render();setTimeout(()=>{const e=$('#cm-'+f.id);e&&e.classList.remove('hide')},30)};
+A.sharePost=async el=>{const p=C.posts.find(x=>x.id===el.dataset.id);await dbUpdate('posts',p.id,{shares:(p.shares||0)+1});const link=location.href.split('#')[0]+'#creator';if(navigator.share){try{await navigator.share({title:'SHOPCHATTA',text:p.caption||'Check this out on SHOPCHATTA',url:link})}catch(e){}}else{try{await navigator.clipboard.writeText(link);toast('Link copied')}catch(e){}}render()};
+A.follow=async el=>{await toggleFollow(el.dataset.id);render()};
+A.tip=el=>{if(needLogin())return;const id=el.dataset.id;const u=U(id);if(u&&u.settings&&u.settings.creator&&u.settings.creator.tips===false)throw Error('This creator has turned tips off.');
+  modal(`<h3>Tip ${esc(dName(id))} 💚</h3><form data-f="tip"><input type="hidden" name="id" value="${id}"><label>Amount (${S.cur})</label><input name="amount" type="number" min="1" step="any" required><label>Pay with</label>${payOpts()}<button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Send tip</button></form>`)};
+F.tip=async f=>{await tipCreator(f.id,+f.amount,f.method);closeModal();render()};
+function payOpts(){const w=wallet(S.meId);const g=(me().settings||{}).wallet&&me().settings.wallet.gateway||'paystack';return`<select name="method"><option value="wallet">SHOPCHATTA Wallet (${fmtUSD(w?w.balance:0)})</option><option value="paystack" ${g==='paystack'?'selected':''}>Paystack (cards, bank, USSD)</option><option value="stripe" ${g==='stripe'?'selected':''}>Stripe (international cards)</option><option value="paypal" ${g==='paypal'?'selected':''}>PayPal</option></select>`}
+A.report=el=>{if(needLogin())return;modal(`<h3>Report</h3><p class="mut">Tell us what's wrong. Our team reviews every report.</p><form data-f="report"><input type="hidden" name="kind" value="${el.dataset.k}"><input type="hidden" name="id" value="${el.dataset.id}"><label>Reason</label><select name="reason"><option>Fake or scam</option><option>Counterfeit product</option><option>Abusive / harassment</option><option>Wrong category or misleading</option><option>Spam</option><option>Other</option></select><label>Details</label><textarea name="more"></textarea><button class="btn btn-d btn-block" type="submit" style="margin-top:12px">Send report</button></form>`)};
+F.report=async f=>{await reportItem(f.kind,f.id,f.reason+(f.more?': '+f.more:''));closeModal()};
+
+/* ---------- pages ---------- */
+R.home=()=>{const m=me();let h='';
+  if(!CLOUD_ON)h+=`<div class="warnbar">⚙️ <b>Local demo mode.</b> Paste your Supabase Project URL + Publishable Key in <code>CONFIG</code> (top of the script) to save everything to Supabase. Data is kept on this device meanwhile.</div>`;
+  else if(S.cloudErr)h+=`<div class="warnbar">☁️ Cloud tables are not ready yet. <button class="btn btn-s" data-a="sql">Get setup SQL</button> (run once in Supabase &gt; SQL Editor).</div>`;
+  C.announcements.slice(0,2).forEach(a=>h+=`<div class="banner">📢 <b>${esc(a.title)}</b> ${esc(a.body)}</div>`);
+  if(!m)h+=`<div class="hero">${logo(46)}<h1>Shop. Chat. <b>Earn.</b></h1><p>All In One Place. Buy &amp; sell phones, laptops and gadgets with escrow protection, chat with sellers, and earn as a creator.</p><div class="row"><button class="btn btn-g" data-a="auth" data-m="register">Get started free</button><button class="btn" style="background:rgba(255,255,255,.18)" data-a="nav" data-r="market">Browse market</button></div></div>`;
+  else h+=`<div class="card row"><span>${avatar(m,46)}</span><div class="grow"><b>${t('welcome')}, ${esc(first(m.name))}! ${badgesOf(m.id)}</b><div class="mut sm">${t('slogan')}</div></div><button class="btn btn-g btn-s" data-a="nav" data-r="sell">+ ${t('sell')}</button></div>`;
+  const ads=C.ads.filter(a=>a.status==='approved').slice(0,5);if(ads.length)h+=`<div class="chips">${ads.map(a=>`<a class="chip" style="background:var(--card)" ${a.link?`href="${esc(a.link)}" target="_blank" rel="noopener"`:''}>📣 <b>${esc(a.brand)}</b> ${esc(a.headline)} <span class="pill">Ad</span></a>`).join('')}</div>`;
+  h+=`<div class="chips" style="margin:10px 0">${CATS.map(c=>`<button class="chip" data-a="catGo" data-c="${c}">${CAT_EMO[c]} ${c}</button>`).join('')}</div>`;
+  const list=getProducts({...S.f,q:'',cat:'',cond:'',min:'',max:'',loc:'',status:'in_stock',sort:'new'});
+  h+=`<div class="sect"><h3>🔥 Trending tech</h3><button class="btn btn-o btn-s" data-a="nav" data-r="market">See all</button></div>${list.length?`<div class="grid">${list.slice(0,8).map(pcard).join('')}</div>`:empty('🛍️','No products yet. Be the first to list — it is free!',`<button class="btn btn-g" data-a="nav" data-r="sell">Start selling</button>`)}`;
+  if(m){const fol=C.follows.filter(f=>f.follower===m.id).map(f=>f.following);const fp=list.filter(p=>fol.includes(p.sellerId)).slice(0,4);if(fp.length)h+=`<div class="sect"><h3>⭐ From stores you follow</h3></div><div class="grid">${fp.map(pcard).join('')}</div>`}
+  const posts=C.posts.slice(0,4);if(posts.length)h+=`<div class="sect"><h3>🎬 Creator feed</h3><button class="btn btn-o btn-s" data-a="nav" data-r="creator">More</button></div>${posts.map(postCard).join('')}`;
+  return h};
+A.catGo=el=>{S.f.cat=el.dataset.c;go('market')};
+A.sql=()=>modal(`<h3>Supabase setup SQL</h3><p class="mut sm">Run once in Supabase &gt; SQL Editor. It creates all tables, open-for-launch policies (tighten before scaling), the media bucket and realtime.</p><pre class="sql" id="sqlBox">${esc(SETUP_SQL())}</pre><div class="row end"><button class="btn btn-o" data-a="close">Close</button><button class="btn btn-g" data-a="copySql">Copy SQL</button></div>`,'wide');
+A.copySql=async()=>{try{await navigator.clipboard.writeText(SETUP_SQL());toast('SQL copied')}catch(e){const r=document.createRange();r.selectNodeContents($('#sqlBox'));getSelection().removeAllRanges();getSelection().addRange(r);toast('Select & copy the SQL')}};
+
+function gridHTML(){const a=getProducts();return a.length?`<div class="mut sm" style="margin-bottom:8px">${a.length} result${a.length>1?'s':''}</div><div class="grid">${a.map(pcard).join('')}</div>`:empty('🔍','No products match your filters.',`<button class="btn btn-o" data-a="clearF">Clear filters</button>`)}
+R.market=()=>{const f=S.f;return`<div class="sbox"><span>${ic('search')}</span><input data-i="q" value="${esc(f.q)}" placeholder="${t('search')}"></div>
+  <div class="chips" style="margin:10px 0"><button class="chip ${!f.cat?'on':''}" data-a="setCat" data-c="">All</button>${CATS.map(c=>`<button class="chip ${f.cat===c?'on':''}" data-a="setCat" data-c="${c}">${CAT_EMO[c]} ${c}</button>`).join('')}</div>
+  <details class="card" ${f.cond||f.min||f.max||f.loc||f.status!=='in_stock'?'open':''}><summary style="font-weight:700;cursor:pointer">Filters &amp; sort</summary><div class="filters" style="margin-top:8px">
+  <div><label>Condition</label><select data-i="cond"><option value="">Any</option>${Object.entries(CONDS).map(([k,v])=>`<option value="${k}" ${f.cond===k?'selected':''}>${v}</option>`).join('')}</select></div>
+  <div><label>Min price (${S.cur})</label><input data-i="min" type="number" min="0" value="${esc(f.min)}"></div><div><label>Max price (${S.cur})</label><input data-i="max" type="number" min="0" value="${esc(f.max)}"></div>
+  <div><label>Location</label><input data-i="loc" value="${esc(f.loc)}" placeholder="City / state"></div>
+  <div><label>Availability</label><select data-i="status"><option value="in_stock" ${f.status==='in_stock'?'selected':''}>In Stock</option><option value="reserved" ${f.status==='reserved'?'selected':''}>Reserved</option><option value="sold" ${f.status==='sold'?'selected':''}>Sold</option><option value="" ${f.status===''?'selected':''}>All (no drafts)</option></select></div>
+  <div><label>Sort</label><select data-i="sort"><option value="new" ${f.sort==='new'?'selected':''}>Newest</option><option value="low" ${f.sort==='low'?'selected':''}>Price: low to high</option><option value="high" ${f.sort==='high'?'selected':''}>Price: high to low</option></select></div></div></details>
+  <div id="gridBox">${gridHTML()}</div>`};
+const refreshGrid=()=>{const g=$('#gridBox');if(g)g.innerHTML=gridHTML()};
+A.setCat=el=>{S.f.cat=el.dataset.c;render()};
+A.clearF=()=>{S.f={q:'',cat:'',cond:'',min:'',max:'',loc:'',status:'in_stock',sort:'new'};render()};
+
+R.product=()=>{const p=C.products.find(x=>x.id===S.arg);if(!p)return empty('🔍','This product was not found.',`<button class="btn" data-a="nav" data-r="market">Back to market</button>`);
+  if(!S.viewed.has('p'+p.id)){S.viewed.add('p'+p.id);if(p.sellerId!==S.meId){p.views=(p.views||0)+1;dbUpdate('products',p.id,{views:p.views})}}
+  const s=U(p.sellerId);const photos=(p.photos&&p.photos.length)?p.photos:[ph(p.cat)];const own=p.sellerId===S.meId;const wa=waNumber(s);
+  return`<button class="btn btn-o btn-s" data-a="back" style="margin-bottom:10px">${ic('back')} Back</button>
+  <div class="gal">${photos.map(x=>`<img src="${esc(x)}" alt="${esc(p.title)}">`).join('')}</div>
+  <div class="card" style="margin-top:12px"><div class="row sb"><div class="big">${pconv(p)}</div><span class="pill ${p.status==='in_stock'?'g':'w'}">${STATUSES[p.status]}</span></div>
+  ${p.cur!==S.cur?`<div class="mut sm">Listed at ${fmt(p.price,p.cur)} · converted to ${S.cur}</div>`:''}
+  <h2 style="margin-top:6px">${esc(p.title)}</h2><div class="row mut sm"><span class="pill b">${CAT_EMO[p.cat]||''} ${esc(p.cat)}</span><span class="pill">${esc(CONDS[p.cond]||'')}</span><span>📍 ${esc(p.location||'—')}</span><span>👁 ${p.views||0}</span></div>
+  <p style="margin:10px 0;white-space:pre-wrap">${esc(p.desc||'No description.')}</p>${p.demo?'<div class="mut sm">Demo listing</div>':''}
+  <div class="row" style="margin-top:8px">${own?`<button class="btn btn-o" data-a="editP" data-id="${p.id}">${ic('edit')} Edit</button>`:`<button class="btn btn-g grow" data-a="buyModal" data-id="${p.id}" ${p.status!=='in_stock'?'disabled':''}>${ic('shield')} ${t('buy')} · Escrow protected</button>`}</div>
+  ${own?'':`<div class="row" style="margin-top:8px"><button class="btn grow" data-a="chatSeller" data-id="${p.id}">${ic('chat')} Chat seller</button>${wa?`<a class="btn btn-wa" href="${esc(waLink(wa,'Hi, is your '+p.title+' still available on SHOPCHATTA?'))}" target="_blank" rel="noopener">WhatsApp</a>`:''}<button class="btn btn-o" data-a="fav" data-id="${p.id}">${ic('heart')} ${isFav(p.id)?'Saved':'Save'}</button><button class="btn btn-o" data-a="shareProduct" data-id="${p.id}">${ic('share')}</button><button class="btn btn-o" data-a="report" data-k="product" data-id="${p.id}">${ic('flag')}</button></div>`}</div>
+  ${s?`<div class="card row" data-a="nav" data-r="store" data-id="${s.id}" style="cursor:pointer">${avatar(s,48)}<div class="grow"><b>${esc(s.storeName||s.name)}</b> ${badgesOf(s.id)}<div class="mut sm">${s.rating?stars(s.rating)+' ('+s.ratingCount+')':'New seller'} · ${sellerSales(s.id)} sales ${isOnline(s)&&(s.settings||{}).privacy&&s.settings.privacy.showOnline!==false?'· 🟢 online':''}</div></div><span>›</span></div>`:''}
+  <div class="card sm"><b>🛡️ Buyer Protection</b><br>You pay → SHOPCHATTA holds the money → seller ships → you confirm → money is released. Fake or not as described? Open a dispute for a refund.</div>`};
+A.back=()=>history.length>1?history.back():go('home');
+A.shareProduct=async el=>{const p=C.products.find(x=>x.id===el.dataset.id);const url=location.href.split('#')[0]+'#product/'+p.id;if(navigator.share){try{await navigator.share({title:p.title,text:p.title+' on SHOPCHATTA',url})}catch(e){}}else{await navigator.clipboard.writeText(url);toast('Link copied')}};
+A.chatSeller=async el=>{if(needLogin())return;needVerified();const p=C.products.find(x=>x.id===el.dataset.id);const c=await createChat('private',{peer:p.sellerId,productId:p.id});go('chat',c.id)};
+A.buyModal=el=>{if(needLogin())return;const u=me();if(!u.emailVerified||!u.phoneVerified){needVerified()}
+  const p=C.products.find(x=>x.id===el.dataset.id);const s=(U(p.sellerId)||{}).settings||{};const sh=s.seller||{shipPickup:true,shipBike:true,shipWaybill:true};
+  modal(`<h3>Checkout — escrow protected</h3><div class="pcard"><img src="${esc(imgOf(p))}" alt=""><div class="grow"><b>${esc(p.title)}</b><div class="mut sm">${pconv(p)}</div></div></div>
+  <form data-f="buy"><input type="hidden" name="id" value="${p.id}"><label>Delivery</label><select name="delivery" id="delSel">${sh.shipPickup!==false?'<option value="pickup">Pickup (meet the seller)</option>':''}${sh.shipBike!==false?'<option value="bike">Bike delivery (same city)</option>':''}${sh.shipWaybill!==false?'<option value="waybill">Waybill / Courier (other cities)</option>':''}</select>
+  <label>Delivery address / pickup notes</label><textarea name="address" placeholder="Street, city, phone for rider…"></textarea><label>Pay with</label>${payOpts()}
+  <div class="card sm" style="margin-top:12px;background:var(--bg)">Total: <b>${pconv(p)}</b><br>Seller receives ${fmt(p.price*(1-CONFIG.COMMISSION),p.cur)} after SHOPCHATTA's 5% commission, only when you confirm delivery.</div>
+  <button class="btn btn-g btn-block" type="submit">Pay &amp; hold in escrow</button></form>`)};
+F.buy=async f=>{closeModal();const o=await buyProduct(f.id,{method:f.method,delivery:f.delivery,address:f.address});go('orders')};
+
+R.sell=()=>{const u=me();let h='';
+  if(u.sellerStatus==='none'||!u.sellerStatus)return`<h2>Open your store</h2><div class="card"><p class="mut">Listing is <b>free</b>. SHOPCHATTA takes <b>5% only when a sale happens</b> — e.g. a ${fmt(100000,'NGN')} sale = you get ${fmt(95000,'NGN')}, SHOPCHATTA gets ${fmt(5000,'NGN')}.</p>
+  <form data-f="openStore"><label>Store name</label><input name="storeName" required minlength="3" placeholder="e.g. Emmanuel Gadgets"><label>Location</label><input name="location" required placeholder="City, State / Country"><label>Business WhatsApp (optional, country code)</label><input name="whatsapp" type="tel" placeholder="2348012345678"><button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Open store</button></form></div>`;
+  const mine=C.products.filter(p=>p.sellerId===u.id);const count=s=>mine.filter(p=>p.status===s).length;
+  const earned=C.orders.filter(o=>o.seller===u.id&&o.status==='completed').reduce((a,o)=>a+toUSD(o.sellerNet,o.cur),0);const held=C.orders.filter(o=>o.seller===u.id&&['escrow','shipped','delivered','disputed'].includes(o.status)).reduce((a,o)=>a+toUSD(o.sellerNet,o.cur),0);
+  h+=`<div class="row sb"><h2>${esc(u.storeName)} ${badgesOf(u.id)}</h2><button class="btn btn-g" data-a="newP">+ New product</button></div>`;
+  if(u.sellerStatus==='pending')h+=`<div class="warnbar">⏳ Your store is awaiting Admin approval. You can save Drafts now; publishing unlocks after approval.</div>`;
+  if(u.sellerStatus==='rejected')h+=`<div class="warnbar">Your store application was declined. Contact support for help.</div>`;
+  h+=`<div class="stats"><div class="stat"><b>${fmtUSD(earned)}</b>Earned (95%)</div><div class="stat"><b>${fmtUSD(held)}</b>In escrow</div><div class="stat"><b>${count('in_stock')}</b>In stock</div><div class="stat"><b>${count('sold')}</b>Sold</div></div>
+  <div class="row" style="margin-bottom:10px"><label class="row" style="margin:0"><span class="sw"><input type="checkbox" data-setp="storeOpen" ${u.storeOpen!==false?'checked':''}><i></i></span> Store ${u.storeOpen!==false?'open':'closed'}</label><button class="btn btn-o btn-s" data-a="adModal">📣 Brand Ads</button>${u.pro?'<span class="pill b">PRO active</span>':'<button class="btn btn-o btn-s" data-a="proModal">⭐ Go Pro</button>'}</div>
+  <div class="tabs">${Object.entries(STATUSES).map(([k,v])=>`<button class="${S.sellTab===k?'on':''}" data-a="sellTab" data-t="${k}">${v} (${count(k)})</button>`).join('')}</div>`;
+  const list=mine.filter(p=>p.status===S.sellTab);
+  h+=list.length?list.map(p=>`<div class="card"><div class="row" style="flex-wrap:nowrap"><img src="${esc(imgOf(p))}" style="width:64px;height:64px;border-radius:12px;object-fit:cover" alt=""><div class="grow"><b>${esc(p.title)}</b><div class="mut sm">${pconv(p)} · ${esc(CONDS[p.cond])} · 👁 ${p.views||0}${p.boostUntil&&new Date(p.boostUntil)>new Date()?' · 🚀 boosted':''}</div></div></div><div class="row" style="margin-top:8px">${prodBtns(p)}</div></div>`).join(''):empty('📦',`No ${STATUSES[S.sellTab].toLowerCase()} products.`);
+  return h};
+const prodBtns=p=>{const b=(a,l,c='btn-o')=>`<button class="btn ${c} btn-s" data-a="${a}" data-id="${p.id}">${l}</button>`;
+  const m={draft:[b('pubP','Publish','btn-g'),b('editP','Edit'),b('delP','Delete')],in_stock:[b('resP','Reserve'),b('soldP','Mark sold'),b('draftP','To draft'),b('boostP','🚀 Boost'),b('editP','Edit'),b('delP','Delete')],reserved:[b('stockP','Back to stock'),b('soldP','Mark sold')],sold:[b('stockP','Relist')]};return(m[p.status]||[]).join('')};
+A.sellTab=el=>{S.sellTab=el.dataset.t;render()};
+F.openStore=async f=>{await openStore(f);render()};
+A.pubP=async el=>{const u=me();if(u.sellerStatus!=='approved')throw Error('Your store needs Admin approval before publishing.');const p=C.products.find(x=>x.id===el.dataset.id);if(!(p.photos||[]).length)throw Error('Add a photo first (Edit).');await setProductStatus(el.dataset.id,'in_stock');render()};
+A.stockP=async el=>{await setProductStatus(el.dataset.id,'in_stock');render()};A.soldP=async el=>{await setProductStatus(el.dataset.id,'sold');render()};A.resP=async el=>{await setProductStatus(el.dataset.id,'reserved');render()};A.draftP=async el=>{await setProductStatus(el.dataset.id,'draft');render()};
+A.delP=async el=>{if(await askModal('Delete product?','This cannot be undone.','Delete')){await dbDelete('products',el.dataset.id);toast('Deleted');render()}};
+A.newP=()=>productForm();A.editP=el=>productForm(el.dataset.id);
+function productForm(id){const p=id?C.products.find(x=>x.id===id):null;S.tmp.photos=[];const cats=CATS.map(c=>`<option ${p&&p.cat===c?'selected':''}>${c}</option>`).join('');
+  modal(`<h3>${p?'Edit product':'New product'}</h3><p class="mut sm">Free to list. 5% commission only when it sells.</p><form data-f="product"><input type="hidden" name="id" value="${p?p.id:''}">
+  <label>Photos (up to 4)</label><div class="row" id="prevPhotos">${p?(p.photos||[]).map(x=>`<img src="${esc(x)}" width="56" height="56" style="border-radius:10px;object-fit:cover" alt="">`).join(''):''}</div><input type="file" accept="image/*" multiple data-file="photos">
+  <label>Title</label><input name="title" required value="${p?esc(p.title):''}" placeholder="e.g. iPhone 14 Pro 256GB, Space Black"><div class="filters"><div><label>Category</label><select name="cat">${cats}</select></div><div><label>Condition</label><select name="cond">${Object.entries(CONDS).map(([k,v])=>`<option value="${k}" ${p&&p.cond===k?'selected':''}>${v}</option>`).join('')}</select></div></div>
+  <div class="filters"><div><label>Price</label><input name="price" type="number" min="1" step="any" required value="${p?p.price:''}"></div><div><label>Currency</label><select name="cur">${CURS.map(c=>`<option ${(p?p.cur:S.cur)===c?'selected':''}>${c}</option>`).join('')}</select></div></div>
+  <label>Location</label><input name="location" value="${p?esc(p.location):esc(me().storeLocation||'')}" placeholder="City, State"><label>Description</label><textarea name="desc" placeholder="Specs, warranty, what's in the box…">${p?esc(p.desc):''}</textarea>
+  <label>Status</label><select name="status">${Object.entries(STATUSES).map(([k,v])=>`<option value="${k}" ${(p?p.status:'in_stock')===k?'selected':''}>${v}</option>`).join('')}</select><button class="btn btn-g btn-block" type="submit" style="margin-top:14px">Save product</button></form>`,'wide')}
+FILE.photos=async el=>{const files=[...el.files].slice(0,4);S.tmp.photos=[];const box=$('#prevPhotos');if(box)box.innerHTML='<span class="mut sm">Processing…</span>';for(const f of files){S.tmp.photos.push(await storeMedia(f))}if(box)box.innerHTML=S.tmp.photos.map(x=>`<img src="${esc(x)}" width="56" height="56" style="border-radius:10px;object-fit:cover" alt="">`).join('')};
+F.product=async f=>{await uploadProduct(f,f.id||null);closeModal();render()};
+A.boostP=el=>{const u=me();const usd=u.pro?CONFIG.BOOST_PRICE_USD/2:CONFIG.BOOST_PRICE_USD;modal(`<h3>🚀 Boost product</h3><p class="mut">Show it first in Market &amp; Home for 7 days. Price: <b>${fmtUSD(usd)}</b>${u.pro?' (Pro 50% off)':''}.</p><form data-f="boost"><input type="hidden" name="id" value="${el.dataset.id}"><label>Pay with</label>${payOpts()}<button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Boost now</button></form>`)};
+F.boost=async f=>{await boostProduct(f.id,f.method);closeModal();render()};
+A.proModal=()=>{modal(`<h3>⭐ SHOPCHATTA Pro</h3><p class="mut">${fmtUSD(CONFIG.PRO_PRICE_USD)} / 30 days</p><ul style="margin:8px 0 12px 18px"><li>Pro badge on your store &amp; posts</li><li>50% off product boosting</li><li>Priority in search results &amp; faster support</li></ul><form data-f="pro">${payOpts()}<button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Subscribe</button></form>`)};
+F.pro=async f=>{await buyPro(f.method);closeModal();render()};
+A.adModal=()=>{modal(`<h3>📣 Brand Ads</h3><p class="mut">Promote your brand on every Home feed. Admin reviews before it goes live. From ${fmtUSD(10)}.</p><form data-f="ad"><label>Brand</label><input name="brand" required><label>Headline</label><input name="headline" required maxlength="80"><label>Link (optional)</label><input name="link" type="url" placeholder="https://"><label>Budget (${S.cur})</label><input name="budget" type="number" min="1" step="any" required value="${Math.round(fromUSD(10,S.cur))}"><label>Pay with</label>${payOpts()}<button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Submit ad</button></form>`)};
+F.ad=async f=>{const usd=toUSD(+f.budget,S.cur);if(usd<10)throw Error('Minimum ad budget is '+fmtUSD(10));const pay=await payWith(f.method,usd,'Brand ad: '+f.brand);await dbInsert('ads',{owner:S.meId,uid:S.meId,brand:f.brand,headline:f.headline,link:f.link,usd,status:'pending',ref:pay.ref});await dbInsert('transactions',{uid:'platform',owner:'platform',type:'revenue',usd,note:'Brand ad: '+f.brand});await notifyAdmins('New brand ad to review',f.brand+' — '+f.headline,'admin');closeModal();toast('Ad submitted for approval')};
+
+/* ---------- chats ---------- */
+R.chats=()=>{const u=me();const tabs=[['private','Private'],['store','Customers'],['community','Community'],['support','Support']];
+  let list=[];
+  if(S.chatTab==='private')list=C.chats.filter(c=>c.type==='private'&&c.members.includes(u.id));
+  if(S.chatTab==='store')list=C.chats.filter(c=>c.type==='store'&&c.members.includes(u.id));
+  if(S.chatTab==='community')list=C.chats.filter(c=>c.type==='general');
+  list=list.sort((a,b)=>new Date(b.lastAt||b.created_at)-new Date(a.lastAt||a.created_at));
+  const row=c=>{let name=c.name,av=`<span class="av" style="width:46px;height:46px;font-size:20px">${c.type==='general'?'💬':'🏪'}</span>`,sub=c.lastMsg||c.desc||'Say hello 👋';
+    if(c.type==='private'){const pid=c.members.find(x=>x!==u.id);name=dName(pid);av=avatar(pid,46);const p=C.products.find(x=>x.id===c.productId);if(p)sub=(c.lastMsg?c.lastMsg+' · ':'')+'re: '+p.title}
+    return`<div class="li" data-a="nav" data-r="chat" data-id="${c.id}">${av}<div class="grow"><b>${esc(name)}</b><div class="mut sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(sub)}</div></div><span class="mut sm">${c.lastAt?ago(c.lastAt):''}</span></div>`};
+  let body;
+  if(S.chatTab==='support'){const mine=C.chats.find(c=>c.id==='support-'+u.id);body=`<div class="card"><p>Need help? Chat live with the SHOPCHATTA team.</p><button class="btn btn-g" data-a="openSupport">Open support chat</button></div>`+(isAdmin()?`<div class="card"><b>Support inbox (Admin)</b>${C.chats.filter(c=>c.type==='support').map(row).join('')||'<p class="mut">No tickets.</p>'}</div>`:'')}
+  else body=list.length?`<div class="card" style="padding:4px 14px">${list.map(row).join('')}</div>`:empty(S.chatTab==='private'?'💬':'🏪',S.chatTab==='private'?'No chats yet. Open a product and tap “Chat seller”.':S.chatTab==='store'?'Customer groups appear after you buy from a store (or open your own).':'Community groups load shortly.');
+  return`<h2>${t('chats')}</h2><div class="tabs">${tabs.map(([k,l])=>`<button class="${S.chatTab===k?'on':''}" data-a="chatTab" data-t="${k}">${l}</button>`).join('')}</div>${body}`};
+A.chatTab=el=>{S.chatTab=el.dataset.t;render()};
+A.openSupport=async()=>{const c=await createChat('support');if(!C.messages.some(m=>m.chatId===c.id))await dbInsert('messages',{chatId:c.id,owner:'bot',from:'bot',fromName:'SHOPCHATTA Support',text:'Hi '+first(me().name)+'! 👋 How can we help? Ask about escrow, refunds, withdrawals or your account.',kind:'text'});go('chat',c.id)};
+R.chat=()=>{const c=C.chats.find(x=>x.id===S.arg);if(!c||!canSee(c))return empty('🔒','This chat is not available.',`<button class="btn" data-a="nav" data-r="chats">Back</button>`);
+  const u=me();S.chatId=c.id;let title=c.name,sub='',av='<span class="av" style="width:40px;height:40px">💬</span>',wa='';
+  if(c.type==='private'){const pid=c.members.find(x=>x!==u.id);const peer=U(pid);title=dName(pid);av=avatar(pid,40);sub=peer&&isOnline(peer)&&((peer.settings||{}).privacy||{}).showOnline!==false?'🟢 online':'Private chat';wa=waNumber(peer)}
+  else if(c.type==='store'){sub='Customers only · '+c.members.length+' member'+(c.members.length>1?'s':'');av='<span class="av" style="width:40px;height:40px">🏪</span>'}
+  else if(c.type==='support'){title=isAdmin()&&c.members[0]!==u.id?'Support: '+dName(c.members[0]):'SHOPCHATTA Support';sub='Live chat support';wa=CONFIG.SUPPORT_WHATSAPP}
+  else sub=c.desc||'Community';
+  const p=c.productId?C.products.find(x=>x.id===c.productId):null;
+  const msgs=C.messages.filter(m=>m.chatId===c.id);S.lastSpoken=msgs.length?msgs[0].id:null;
+  return`<div class="chatwrap"><div class="row" style="padding-bottom:8px;flex-wrap:nowrap"><button class="btn btn-o btn-s" data-a="nav" data-r="chats">${ic('back')}</button>${av}<div class="grow"><b>${esc(title)}</b><div class="mut sm">${esc(sub)}</div></div>${wa?`<a class="btn btn-wa btn-s" target="_blank" rel="noopener" href="${esc(waLink(wa,'Hi from SHOPCHATTA'+(p?' — about '+p.title:'')))}">WhatsApp</a>`:''}</div>
+  ${p?`<div class="pcard" data-a="openProduct" data-id="${p.id}"><img src="${esc(imgOf(p))}" alt=""><div class="grow"><b>${esc(p.title)}</b><div class="mut sm">${pconv(p)} · ${STATUSES[p.status]}</div></div><span class="pill g">View</span></div>`:''}
+  <div id="msgs"></div><div id="recHint" class="hide mut sm" style="text-align:center;color:var(--bad)">🔴 Recording… release to send</div>
+  <div class="composer"><textarea id="chatInput" rows="1" placeholder="Message…"></textarea><button id="micBtn" aria-label="Hold to record voice note" title="Hold to record">${ic('mic')}</button><button class="sendb" data-a="sendMsg" aria-label="Send">${ic('send')}</button></div></div>`};
+function msgHTML(m){const mine=m.from===S.meId;const c=C.chats.find(x=>x.id===S.chatId);const grp=c&&c.type!=='private';const auto=((me().settings||{}).chat||{}).autoTranscribe!==false;let body;
+  if(m.kind==='voice')body=`<audio controls preload="none" src="${esc(m.audio)}"></audio><div class="acts"><button data-a="v2t" data-id="${m.id}">📝 Convert to Text</button>${m.transcript?`<button data-a="tts" data-id="${m.id}">${ic('spk')} Read aloud</button>`:''}</div><div id="tr-${m.id}" class="sm ${auto&&m.transcript?'':'hide'}" style="margin-top:4px;font-style:italic">${esc(m.transcript||'Transcript unavailable on this browser — try Chrome.')}</div>`;
+  else body=`${esc(m.text)}<div class="acts"><button data-a="tts" data-id="${m.id}" aria-label="Read aloud">${ic('spk')} Listen</button></div>`;
+  return`<div class="msg ${mine?'me':''}">${!mine&&grp?`<div class="who">${esc(m.fromName)}</div>`:''}${body}<div class="tm">${clock(m.created_at)}</div></div>`}
+function renderChatBody(){const el=$('#msgs');if(!el)return;const near=el.scrollHeight-el.scrollTop-el.clientHeight<120||!el.firstChild;
+  const msgs=C.messages.filter(m=>m.chatId===S.chatId).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  el.innerHTML=msgs.length?msgs.map(msgHTML).join(''):`<div class="empty"><div class="em">👋</div><p>No messages yet — say hi!</p></div>`;if(near)el.scrollTop=el.scrollHeight;
+  const last=msgs[msgs.length-1];if(last&&last.from!==S.meId&&last.id!==S.lastSpoken){S.lastSpoken=last.id;if((((me()||{}).settings||{}).chat||{}).autoRead)textToVoice(last.text||last.transcript||'')}}
+A.sendMsg=async()=>{const i=$('#chatInput');const txt=i.value;if(!txt.trim())return;i.value='';try{await sendMessage(S.chatId,txt);renderChatBody()}catch(e){i.value=txt;throw e}};
+A.v2t=el=>{const d=$('#tr-'+el.dataset.id);if(d)d.classList.toggle('hide')};
+A.tts=el=>{const m=C.messages.find(x=>x.id===el.dataset.id);textToVoice(m&&(m.text||m.transcript))};
+
+/* ---------- creator ---------- */
+R.creator=()=>{const u=me();let h='<h2>🎬 Creator</h2>';
+  if(u){const s=creatorStats(u.id);const bar=(a,b,l)=>`<div style="margin:8px 0"><div class="row sb sm"><span>${l}</span><b>${Math.min(a,b).toLocaleString()} / ${b.toLocaleString()}</b></div><div class="bar"><i style="width:${Math.min(100,a/b*100)}%"></i></div></div>`;
+    const earn=C.transactions.filter(x=>x.uid===u.id&&['tip','ad_earn'].includes(x.type)).reduce((a,x)=>a+x.usd,0);const mon=isMonetised(u.id);
+    h+=`<div class="card"><div class="row sb"><b>Start earning</b><span class="pill ${mon?'g':'w'}">${mon?'Monetised ✔':'Not yet'}</span></div>${bar(s.followers,100,'Followers')}${bar(s.posts,5,'Posts')}${bar(s.views,1000,'Total views')}<p class="mut sm">Earn from ad views, product sales and tips once all three are reached. Earned so far from tips &amp; ads: <b>${fmtUSD(earn)}</b></p><button class="btn btn-g btn-block" data-a="newPost">+ New post (photo / video)</button></div>`}
+  else h+=`<div class="card"><p>Post videos &amp; photos, grow followers and earn. Reach <b>100 followers + 5 posts + 1,000 views</b> to unlock earnings.</p><button class="btn btn-g" data-a="auth" data-m="register">Join as a creator</button></div>`;
+  const posts=C.posts.slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  return h+(posts.length?posts.map(postCard).join(''):empty('🎥','No posts yet. Be the first creator!'))};
+A.newPost=()=>{needVerified();S.tmp.media=null;modal(`<h3>New post</h3><form data-f="post"><label>Photo or video</label><input type="file" accept="image/*,video/*" data-file="media" required><div id="mediaName" class="mut sm"></div><label>Caption</label><textarea name="caption" placeholder="Say something…"></textarea><button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Post</button></form>`)};
+FILE.media=el=>{S.tmp.media=el.files[0]||null;const n=$('#mediaName');if(n&&S.tmp.media)n.textContent=S.tmp.media.name};
+F.post=async f=>{toast('Uploading…');await createPost(S.tmp.media,f.caption);S.tmp.media=null;closeModal();toast('Posted! 🎉');render()};
+
+/* ---------- orders ---------- */
+const STEPS=['Ordered','Shipped','Delivered','Confirmed'];const DELIV={pickup:'Pickup',bike:'Bike delivery',waybill:'Waybill / Courier'};
+const OST={escrow:['Paid · held in escrow','w'],shipped:['Shipped','b'],delivered:['Delivered','b'],completed:['Completed','g'],disputed:['In dispute','r'],refunded:['Refunded','r']};
+function orderCard(o){const buyer=o.buyer===S.meId;const reached=new Set(o.track.map(x=>x.s));const st=OST[o.status]||[o.status,''];const other=buyer?o.seller:o.buyer;const reviewed=C.reviews.some(r=>r.orderId===o.id);let act='';
+  if(!buyer&&o.status==='escrow')act+=`<button class="btn btn-s" data-a="ship" data-id="${o.id}" data-s="Shipped">📦 ${o.delivery==='pickup'?'Ready for pickup':'Mark shipped'}</button>`;
+  if(!buyer&&o.status==='shipped')act+=`<button class="btn btn-s" data-a="ship" data-id="${o.id}" data-s="Delivered">✅ Mark delivered</button>`;
+  if(buyer&&(['shipped','delivered'].includes(o.status)||(o.status==='escrow'&&o.delivery==='pickup')))act+=`<button class="btn btn-g btn-s" data-a="confirmRecv" data-id="${o.id}">Confirm received — release money</button>`;
+  if(['escrow','shipped','delivered'].includes(o.status))act+=`<button class="btn btn-o btn-s" data-a="dispute" data-id="${o.id}">⚠️ Dispute &amp; refund</button>`;
+  if(buyer&&o.status==='completed'&&!reviewed)act+=`<button class="btn btn-s" data-a="rate" data-id="${o.id}">⭐ Rate seller</button>`;
+  act+=`<button class="btn btn-o btn-s" data-a="chatOrder" data-id="${o.id}">${ic('chat')} Chat</button>`;
+  return`<div class="card"><div class="row" style="flex-wrap:nowrap"><img src="${esc(o.photo||ph(o.cat))}" style="width:60px;height:60px;border-radius:12px;object-fit:cover" alt=""><div class="grow"><b>${esc(o.title)}</b><div class="mut sm">${fmt(o.amount,o.cur)} · ${DELIV[o.delivery]||''} · ${buyer?'Seller':'Buyer'}: ${esc(dName(other))}</div><div class="mut sm">#${o.id.slice(0,8)} · ${ago(o.created_at)}</div></div><span class="pill ${st[1]}">${st[0]}</span></div>
+  <div class="steps">${STEPS.map(s=>`<div class="${reached.has(s)?'on':''}">${s}</div>`).join('')}</div>
+  ${!buyer?`<div class="mut sm">You receive ${fmt(o.sellerNet,o.cur)} after 5% commission (${fmt(o.commission,o.cur)}).</div>`:''}${o.address?`<div class="mut sm">📍 ${esc(o.address)}</div>`:''}<div class="row" style="margin-top:8px">${act}</div></div>`}
+R.orders=()=>{const u=me();const list=C.orders.filter(o=>S.orderTab==='buying'?o.buyer===u.id:o.seller===u.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  return`<h2>${t('orders')}</h2><div class="tabs"><button class="${S.orderTab==='buying'?'on':''}" data-a="orderTab" data-t="buying">My purchases</button><button class="${S.orderTab==='selling'?'on':''}" data-a="orderTab" data-t="selling">My sales</button></div>${list.length?list.map(orderCard).join(''):empty('📦','No orders here yet.',`<button class="btn btn-g" data-a="nav" data-r="market">Browse market</button>`)}`};
+A.orderTab=el=>{S.orderTab=el.dataset.t;render()};
+A.ship=async el=>{await updateTracking(el.dataset.id,el.dataset.s);render()};
+A.confirmRecv=async el=>{if(!await askModal('Release payment?','Only confirm if you have received the item and it matches the listing. The money will be released to the seller.','Yes, release'))return;const o=C.orders.find(x=>x.id===el.dataset.id);await releaseEscrow(o.id);toast('Money released to the seller. Thank you! ✔');render();A.rate({dataset:{id:o.id}})};
+A.chatOrder=async el=>{const o=C.orders.find(x=>x.id===el.dataset.id);const peer=o.buyer===S.meId?o.seller:o.buyer;const c=await createChat('private',{peer,productId:o.productId});go('chat',c.id)};
+A.dispute=el=>modal(`<h3>Dispute &amp; refund</h3><p class="mut sm">Funds stay in escrow while our team reviews. Fake item? You get a refund.</p><form data-f="dispute"><input type="hidden" name="id" value="${el.dataset.id}"><label>What went wrong?</label><textarea name="reason" required minlength="10" placeholder="Item is fake, not delivered, not as described…"></textarea><button class="btn btn-d btn-block" type="submit" style="margin-top:12px">Open dispute</button></form>`);
+F.dispute=async f=>{await createDispute(f.id,f.reason);closeModal();render()};
+A.rate=el=>{S.rate={id:el.dataset.id,n:0};modal(`<h3>Rate the seller</h3><div class="row" style="justify-content:center" id="stars">${[1,2,3,4,5].map(i=>`<button class="starbtn" data-a="star" data-n="${i}">★</button>`).join('')}</div><form data-f="rate"><textarea name="text" placeholder="Write a short review (optional)"></textarea><button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Submit review</button></form>`)};
+A.star=el=>{S.rate.n=+el.dataset.n;$$('#stars .starbtn').forEach((b,i)=>b.classList.toggle('on',i<S.rate.n))};
+F.rate=async f=>{await rateSeller(S.rate.id,S.rate.n,f.text);closeModal();render()};
+
+/* ---------- wallet ---------- */
+const TXI={topup:'⬆️',withdraw:'⬇️',payment:'🛒',escrow_release:'💰',refund:'↩️',bonus:'🎁',tip:'💚',ad_earn:'📺',subscription:'⭐'};
+R.wallet=()=>{const u=me();const w=wallet(u.id)||{balance:0,points:0};const tx=C.transactions.filter(x=>x.uid===u.id).slice(0,30);const refs=C.referrals.filter(r=>r.referrer===u.id);const idv=C.verifications.find(v=>v.uid===u.id);
+  return`<h2>${t('wallet')}</h2><div class="hero" style="padding:18px"><div class="sm" style="opacity:.8">Available balance</div><div style="font-size:2rem;font-weight:800">${fmtUSD(w.balance||0)}</div><div class="sm" style="opacity:.85">🎁 ${w.points||0} Rewards points · 1 pt per ${fmtUSD(1)} spent</div>
+  <div class="row" style="margin-top:12px;position:relative;z-index:2"><button class="btn btn-g" data-a="topupModal">+ Top up</button><button class="btn" style="background:rgba(255,255,255,.18)" data-a="withdrawModal">Withdraw</button></div></div>
+  <div class="row" style="margin-bottom:12px"><button class="btn btn-o btn-s" data-a="idModal">🪪 ${u.idVerified?'ID verified ✔':idv&&idv.status==='pending'?'ID under review':'Verify ID'}</button>${u.pro?'<span class="pill b">⭐ PRO</span>':'<button class="btn btn-o btn-s" data-a="proModal">⭐ SHOPCHATTA Pro</button>'}</div>
+  <div class="card"><div class="row sb"><b>🎁 Refer &amp; earn</b><span class="pill g">${esc(u.code)}</span></div><p class="mut sm">Earn ${fmtUSD(CONFIG.REF_BONUS_USD)} when a friend makes their first sale or purchase. Referred: ${refs.length} · Paid: ${refs.filter(r=>r.bonusPaid).length}</p><button class="btn btn-s" data-a="refer">${ic('share')} Invite friends</button></div>
+  <div class="sect"><h3>History</h3></div><div class="card" style="padding:4px 14px">${tx.length?tx.map(x=>`<div class="trow"><div>${TXI[x.type]||'•'} <b>${esc(x.note||x.type)}</b><div class="mut sm">${ago(x.created_at)}${x.status?' · '+x.status:''}</div></div><b style="color:${x.usd>=0?'var(--green2)':'var(--bad)'}">${x.usd>=0?'+':''}${fmtUSD(x.usd)}</b></div>`).join(''):'<p class="mut" style="padding:12px 0">No transactions yet.</p>'}</div>`};
+A.topupModal=()=>modal(`<h3>Top up wallet</h3><form data-f="topup"><label>Amount (${S.cur})</label><input name="amount" type="number" min="1" step="any" required><label>Pay with</label><select name="method"><option value="paystack">Paystack</option><option value="stripe">Stripe</option><option value="paypal">PayPal</option></select><button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Continue</button></form>`);
+F.topup=async f=>{closeModal();await topUp(f.method,+f.amount);render()};
+A.withdrawModal=()=>{const w=wallet(S.meId)||{};const b=w.payout||{};modal(`<h3>Withdraw</h3><p class="mut sm">Balance: ${fmtUSD(w.balance||0)}. Withdrawals of ${fmtUSD(CONFIG.BIG_WITHDRAW_USD)}+ need ID verification (NIN, Passport or Driver's License).</p><form data-f="withdraw"><label>Amount (${S.cur})</label><input name="amount" type="number" min="1" step="any" required><label>Bank / mobile money name</label><input name="bank" required value="${esc(b.name||'')}"><label>Account number</label><input name="number" required value="${esc(b.number||'')}"><label>Account name</label><input name="acct" value="${esc(b.acct||me().name)}"><button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Request withdrawal</button></form>`)};
+F.withdraw=async f=>{await withdraw(+f.amount,{name:f.bank,number:f.number,acct:f.acct});closeModal();render()};
+A.idModal=()=>{S.tmp.idPhoto=null;modal(`<h3>🪪 Verify your identity</h3><p class="mut sm">Required before big withdrawals and for the Verified badge. Reviewed by the SHOPCHATTA team.</p><form data-f="idsubmit"><label>ID type</label><select name="type"><option>NIN</option><option>International Passport</option><option>Driver's License</option></select><label>ID number</label><input name="number" required><label>Photo of ID</label><input type="file" accept="image/*" data-file="idphoto" required><button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Submit for review</button></form>`)};
+FILE.idphoto=async el=>{if(el.files[0])S.tmp.idPhoto=await fileToDataURL(el.files[0],900,.7)};
+F.idsubmit=async f=>{await submitID(f.type,f.number);closeModal();render()};
+A.refer=()=>referUser();
+
+/* ---------- favourites / store ---------- */
+R.favs=()=>{const ids=C.favourites.filter(f=>f.uid===S.meId).map(f=>f.productId);const prods=C.products.filter(p=>ids.includes(p.id));const stores=C.follows.filter(f=>f.follower===S.meId).map(f=>U(f.following)).filter(Boolean);
+  return`<h2>${t('fav')}</h2>${prods.length?`<div class="grid">${prods.map(pcard).join('')}</div>`:empty('❤️','Tap the heart on any product to save it here.')}<div class="sect"><h3>Following</h3></div>${stores.length?`<div class="card" style="padding:4px 14px">${stores.map(s=>`<div class="li" data-a="nav" data-r="store" data-id="${s.id}">${avatar(s,44)}<div class="grow"><b>${esc(s.storeName||s.name)}</b> ${badgesOf(s.id)}</div>›</div>`).join('')}</div>`:'<p class="mut">You are not following any stores or creators yet.</p>'}`};
+R.store=()=>{const s=U(S.arg);if(!s)return empty('🏪','Store not found.');const pub=!s.settings||!s.settings.privacy||s.settings.privacy.profilePublic!==false||s.id===S.meId||isAdmin();
+  if(!pub)return`<div class="card">${avatar(s,60)}<h2>${esc(s.name)}</h2><p class="mut">This profile is private.</p></div>`;
+  const prods=C.products.filter(p=>p.sellerId===s.id&&p.status==='in_stock');const revs=C.reviews.filter(r=>r.seller===s.id);const cs=creatorStats(s.id);const wa=waNumber(s);
+  return`<button class="btn btn-o btn-s" data-a="back" style="margin-bottom:10px">${ic('back')} Back</button><div class="card"><div class="row" style="flex-wrap:nowrap">${avatar(s,64)}<div class="grow"><h2 style="margin:0">${esc(s.storeName||s.name)} ${badgesOf(s.id)}</h2><div class="mut sm">${s.rating?stars(s.rating)+' '+s.rating+' ('+s.ratingCount+' reviews)':'No reviews yet'} · ${sellerSales(s.id)} sales · ${cs.followers} followers</div>${s.bio?`<p class="sm" style="margin-top:4px">${esc(s.bio)}</p>`:''}</div></div>
+  <div class="row" style="margin-top:10px">${s.id!==S.meId?`<button class="btn ${isFollowing(s.id)?'btn-o':''}" data-a="follow" data-id="${s.id}">${isFollowing(s.id)?'Following ✔':'Follow store'}</button><button class="btn btn-o" data-a="chatUser" data-id="${s.id}">${ic('chat')} Message</button>${wa?`<a class="btn btn-wa" target="_blank" rel="noopener" href="${esc(waLink(wa,'Hi from SHOPCHATTA'))}">WhatsApp</a>`:''}<button class="btn btn-o" data-a="report" data-k="user" data-id="${s.id}">${ic('flag')}</button>`:''}</div></div>
+  <div class="sect"><h3>Products (${prods.length})</h3></div>${prods.length?`<div class="grid">${prods.map(pcard).join('')}</div>`:'<p class="mut">No products in stock.</p>'}
+  <div class="sect"><h3>Reviews</h3></div>${revs.length?revs.map(r=>`<div class="card"><div class="row sb"><b>${esc(first(r.buyerName))}</b><span style="color:#FFB400">${stars(r.stars)}</span></div><div class="sm">${esc(r.text||'')}</div><div class="mut sm">${esc(r.title||'')} · ${ago(r.created_at)}</div></div>`).join(''):'<p class="mut">No reviews yet.</p>'}`};
+A.chatUser=async el=>{if(needLogin())return;needVerified();const c=await createChat('private',{peer:el.dataset.id});go('chat',c.id)};
+
+/* ---------- help / notifications / menu ---------- */
+R.help=()=>{const faqs=[['How does escrow protect me?','You pay SHOPCHATTA. We hold the money while the seller ships. When you confirm the item arrived, we release it to the seller. If it is fake or never arrives, open a dispute and get a refund.'],['What does it cost to sell?','Listing is free. SHOPCHATTA takes 5% only when a sale completes. Example: a ₦100,000 sale = seller gets ₦95,000, SHOPCHATTA gets ₦5,000.'],['How do I earn as a creator?','Reach 100 followers, 5 posts and 1,000 total views. Then earn from ad views, product sales and tips.'],['Why do I need to verify my ID?','For big withdrawals (NIN, Passport or Driver\'s License) and to earn the Verified badge.'],['Delivery options?','Pickup, bike delivery in the same city, or waybill/courier to other cities. Track Ordered → Shipped → Delivered in Orders.'],['How do I get paid?','Funds from completed sales land in your wallet. Withdraw to your bank or mobile money.']];
+  return`<h2>${t('help')} Center</h2>${faqs.map(([q,a])=>`<details class="set"><summary>${q}</summary><div class="in mut">${a}</div></details>`).join('')}
+  <div class="card"><b>Still need help?</b><div class="row" style="margin-top:8px"><button class="btn btn-g" data-a="liveSupport">${ic('chat')} Live chat support</button>${CONFIG.SUPPORT_WHATSAPP?`<a class="btn btn-wa" target="_blank" rel="noopener" href="${esc(waLink(CONFIG.SUPPORT_WHATSAPP,'Hi SHOPCHATTA support'))}">WhatsApp</a>`:''}<button class="btn btn-o" data-a="ticketModal">Send a report</button></div></div>`};
+A.liveSupport=async()=>{if(needLogin())return;await A.openSupport()};
+A.ticketModal=()=>{if(needLogin())return;modal(`<h3>Report a problem</h3><form data-f="ticket"><label>Subject</label><input name="subject" required><label>Details</label><textarea name="body" required></textarea><button class="btn btn-g btn-block" type="submit" style="margin-top:12px">Send</button></form>`)};
+F.ticket=async f=>{await dbInsert('tickets',{owner:S.meId,uid:S.meId,name:me().name,subject:f.subject,body:f.body,status:'open'});await notifyAdmins('New support ticket',f.subject,'admin');closeModal();toast('Sent — we will get back to you.')};
+R.notifs=()=>{const u=me();const list=C.notifications.filter(n=>n.uid===u.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,60);const log=C.outbox.filter(o=>o.uid===u.id).slice(0,8);
+  return`<div class="row sb"><h2>${t('notif')}</h2><button class="btn btn-o btn-s" data-a="readAll">Mark all read</button></div>${list.length?`<div class="card" style="padding:4px 14px">${list.map(n=>`<div class="li" data-a="notif" data-id="${n.id}" style="${n.read?'opacity:.65':''}"><div class="grow"><b>${esc(n.title)}</b><div class="mut sm">${esc(n.body)}</div></div><span class="mut sm">${ago(n.created_at)}</span></div>`).join('')}</div>`:empty('🔔','You are all caught up.')}
+  <div class="card sm"><b>Smart delivery</b><p class="mut">When you are offline, important alerts are queued to your Email, WhatsApp and SMS (choose channels in Settings &gt; Notifications). Recent queue:</p>${log.map(o=>`<div class="mut">• ${o.channel.toUpperCase()} → ${esc(o.to)} <span class="pill">${o.status}</span></div>`).join('')||'<div class="mut">Nothing queued.</div>'}<button class="btn btn-o btn-s" style="margin-top:8px" data-a="enablePush">Enable pop-up alerts</button></div>`};
+A.readAll=async()=>{for(const n of C.notifications.filter(n=>n.uid===S.meId&&!n.read))await dbUpdate('notifications',n.id,{read:true});render()};
+A.notif=async el=>{const n=C.notifications.find(x=>x.id===el.dataset.id);if(!n)return;if(!n.read)await dbUpdate('notifications',n.id,{read:true});if(n.link){const [r,a]=n.link.split('/');go(r,a)}else render()};
+A.enablePush=async()=>{if(!window.Notification){toast('Not supported on this browser.','err');return}const p=await Notification.requestPermission();toast(p==='granted'?'Pop-up alerts enabled':'Permission not granted')};
+R.menu=()=>{const m=me();const it=(r,i,l)=>`<div class="card" data-a="nav" data-r="${r}">${ic(i)}${l}</div>`;
+  if(!m)return`<h2>${t('menu')}</h2><div class="card"><p>${t('slogan')}</p><div class="row"><button class="btn btn-g" data-a="auth" data-m="register">${t('signup')}</button><button class="btn btn-o" data-a="auth" data-m="login">${t('login')}</button></div></div><div class="menu-grid">${it('creator','video',t('creator'))}${it('help','help',t('help'))}</div>`;
+  return`<div class="card row">${avatar(m,56)}<div class="grow"><b>${esc(m.name)}</b> ${badgesOf(m.id)}<div class="mut sm">${esc(m.email)}</div></div></div><div class="menu-grid">${it('orders','box',t('orders'))}${it('wallet','wallet',t('wallet'))}${it('creator','video',t('creator'))}${it('favs','heart',t('fav'))}${it('notifs','bell',t('notif'))}${it('settings','cog',t('settings'))}${it('help','help',t('help'))}${isAdmin()?it('admin','shield','Admin'):''}<div class="card" data-a="refer">${ic('gift')}Refer &amp; earn</div><div class="card" data-a="logout">${ic('close')}${t('logout')}</div></div>`};
+
+/* ---------- settings (10 sections) ---------- */
+R.settings=()=>{const u=me();const st=u.settings||defaultSettings();const g=p=>p.split('.').reduce((o,k)=>o&&o[k],st);const w=wallet(u.id)||{};
+  const tog=(p,l,sub)=>`<div class="trow"><div>${l}${sub?`<div class="mut sm">${sub}</div>`:''}</div><label class="sw" style="margin:0"><input type="checkbox" data-set="${p}" ${g(p)?'checked':''}><i></i></label></div>`;
+  const sec=(k,title,body)=>`<details class="set" ${S.openSet===k?'open':''} data-sec="${k}"><summary>${title}</summary><div class="in">${body}</div></details>`;
+  const earned=C.orders.filter(o=>o.seller===u.id&&o.status==='completed');const comm=earned.reduce((a,o)=>a+toUSD(o.commission,o.cur),0),net=earned.reduce((a,o)=>a+toUSD(o.sellerNet,o.cur),0);const cs=creatorStats(u.id);
+  return`<h2>${t('settings')}</h2>
+  ${sec('profile','1. Profile',`<form data-f="saveProfile"><div class="avpick" data-a="pickAvatar2" id="avPrev"><img src="${esc(u.photo||'')}" alt="" onerror="this.replaceWith('Add photo')"></div><input type="file" id="avFile2" accept="image/*" data-file="avatar" class="hide"><label>Full name</label><input name="name" value="${esc(u.name)}" required><label>Bio</label><textarea name="bio" maxlength="200">${esc(u.bio||'')}</textarea><label>Phone</label><input name="phone" value="${esc(u.phone||'')}" type="tel"><div class="row" style="margin:8px 0"><span class="pill ${u.emailVerified?'g':'w'}">Email ${u.emailVerified?'verified':'not verified'}</span><span class="pill ${u.phoneVerified?'g':'w'}">Phone ${u.phoneVerified?'verified':'not verified'}</span>${!u.emailVerified||!u.phoneVerified?'<button type="button" class="btn btn-s" data-a="reverify">Verify now</button>':''}</div><button class="btn btn-g" type="submit">Save profile</button></form>`)}
+  ${sec('account','2. Account &amp; Security',`<form data-f="changePw"><label>New password</label><input name="pw" type="password" minlength="8" autocomplete="new-password" required><button class="btn btn-s" type="submit" style="margin-top:8px">Change password</button></form>${tog('twoStep','2-Step verification','Code by email at login')}<div class="trow"><div>Face ID / Fingerprint<div class="mut sm">${g('biometric')?'Enabled on this device':'Unlock the app with biometrics'}</div></div>${g('biometric')?'<button class="btn btn-o btn-s" data-a="bioOff">Turn off</button>':'<button class="btn btn-s" data-a="bioOn">Enable</button>'}</div><div class="trow"><div>Verified Badge<div class="mut sm">${u.verified?'You are verified ✔':'Verify your ID to earn the badge'}</div></div>${u.verified?verBadge:'<button class="btn btn-s" data-a="idModal">Get verified</button>'}</div><div class="trow"><div><b style="color:var(--bad)">Delete account</b><div class="mut sm">Removes your profile and listings</div></div><button class="btn btn-d btn-s" data-a="delAcc">Delete</button></div>`)}
+  ${sec('privacy','3. Privacy',`${tog('privacy.showPhone','Show my phone / WhatsApp to chat partners')}${tog('privacy.showOnline','Show when I am online')}${tog('privacy.profilePublic','Public profile')}<div class="trow"><div>Who can message me</div><select data-set="privacy.whoMessages" style="width:auto"><option value="everyone" ${g('privacy.whoMessages')==='everyone'?'selected':''}>Everyone</option><option value="followers" ${g('privacy.whoMessages')==='followers'?'selected':''}>Followers only</option></select></div>`)}
+  ${sec('notifications','4. Notifications',`${tog('notif.inapp','In-App')}${tog('notif.email','Email (when offline)')}${tog('notif.whatsapp','WhatsApp (when offline)')}${tog('notif.sms','SMS (when offline)')}<button class="btn btn-o btn-s" style="margin-top:8px" data-a="enablePush">Enable pop-up alerts</button>`)}
+  ${sec('chat','5. Chat Settings',`${tog('chat.enterSend','Press Enter to send')}${tog('chat.readReceipts','Read receipts')}${tog('chat.autoTranscribe','Show voice-note text automatically')}${tog('chat.autoRead','Read new messages aloud (text to voice)')}`)}
+  ${sec('seller','6. Marketplace &amp; Seller',`<div class="trow"><div>Store open<div class="mut sm">Closed stores can't receive orders</div></div><label class="sw" style="margin:0"><input type="checkbox" data-setp="storeOpen" ${u.storeOpen!==false?'checked':''}><i></i></label></div><div class="card" style="background:var(--bg)"><b>Commission: 5% per completed sale</b><div class="mut sm">Sales: ${earned.length} · You earned ${fmtUSD(net)} · Commission paid ${fmtUSD(comm)}. Listing is always free.</div></div><b class="sm">Shipping options you offer</b>${tog('seller.shipPickup','Pickup')}${tog('seller.shipBike','Bike delivery')}${tog('seller.shipWaybill','Waybill / Courier')}<label>Business WhatsApp (country code, digits only)</label><input data-set="seller.whatsapp" value="${esc(g('seller.whatsapp')||'')}" placeholder="2348012345678"><div class="row" style="margin-top:8px"><button class="btn btn-s" data-a="nav" data-r="sell">Open seller hub</button></div>`)}
+  ${sec('wallet','7. Wallet, Payments &amp; Currency',`<div class="trow"><div>Balance</div><b>${fmtUSD(w.balance||0)}</b></div><label>Currency (${CURS.length} supported)</label><select data-setp="currency">${CURS.map(c=>`<option value="${c}" ${S.cur===c?'selected':''}>${c} — ${esc(CUR_NAMES(c))}</option>`).join('')}</select><label>Preferred payment gateway</label><select data-set="wallet.gateway"><option value="paystack" ${g('wallet.gateway')==='paystack'?'selected':''}>Paystack</option><option value="stripe" ${g('wallet.gateway')==='stripe'?'selected':''}>Stripe</option><option value="paypal" ${g('wallet.gateway')==='paypal'?'selected':''}>PayPal</option></select><div class="row" style="margin-top:8px"><button class="btn btn-s" data-a="topupModal">Top up</button><button class="btn btn-o btn-s" data-a="withdrawModal">Withdraw</button><button class="btn btn-o btn-s" data-a="nav" data-r="wallet">Wallet</button></div>`)}
+  ${sec('lang','8. Language &amp; Appearance',`<label>Language</label><select data-setp="lang">${Object.entries(LANGS).map(([k,v])=>`<option value="${k}" ${S.lang===k?'selected':''}>${v}</option>`).join('')}</select><label>Theme</label><select data-setp="theme"><option value="light" ${S.theme==='light'?'selected':''}>Light</option><option value="dark" ${S.theme==='dark'?'selected':''}>Dark</option><option value="system" ${S.theme==='system'?'selected':''}>Match device</option></select>`)}
+  ${sec('creator','9. Creator Settings',`<div class="card" style="background:var(--bg)"><b>${isMonetised(u.id)?'Monetised ✔':'Earning locked'}</b><div class="mut sm">${cs.followers}/100 followers · ${cs.posts}/5 posts · ${cs.views}/1,000 views</div></div>${tog('creator.tips','Allow tips')}${tog('creator.comments','Allow comments')}<button class="btn btn-s" style="margin-top:8px" data-a="nav" data-r="creator">Go to Creator</button>`)}
+  ${sec('data','10. Data, Storage &amp; Help',`<div class="trow"><div>Database<div class="mut sm">${sb?(S.cloudErr?'Supabase connected — tables need setup':'Supabase connected ✔'):'Local mode (add Supabase URL + key in CONFIG)'}</div></div><span class="pill ${sb&&!S.cloudErr?'g':'w'}">${sb?'Cloud':'Local'}</span></div><div class="row" style="margin-top:8px"><button class="btn btn-s" data-a="sql">Supabase setup SQL</button><button class="btn btn-o btn-s" data-a="exportData">Export my data</button><button class="btn btn-o btn-s" data-a="clearCache">Clear device cache</button><button class="btn btn-o btn-s" data-a="nav" data-r="help">Help Center</button><button class="btn btn-o btn-s" data-a="liveSupport">Live chat support</button></div>`)}
+  <button class="btn btn-o btn-block" data-a="logout" style="margin-top:6px">${t('logout')}</button>`};
+A.pickAvatar2=()=>$('#avFile2').click();
+F.saveProfile=async f=>{const patch={name:f.name.trim(),bio:f.bio||'',phone:(f.phone||'').replace(/[^\d+]/g,'')};if(patch.name.split(/\s+/).length<2)throw Error('Please use your full name.');if(S.tmp.avatar){patch.photo=S.tmp.avatar;S.tmp.avatar=null}await dbUpdate('profiles',S.meId,patch);toast('Profile saved');render()};
+F.changePw=async f=>{if(sb){const {error}=await sb.auth.updateUser({password:f.pw});if(error)throw error}else await dbUpdate('profiles',S.meId,{pwHash:await sha(f.pw)});toast('Password changed');render()};
+A.reverify=async()=>{await startVerification(me());showVerify()};
+A.bioOn=async()=>{await enableBiometric();toast('Biometric unlock enabled ✔');render()};
+A.bioOff=async()=>{await setSetting('biometric',false);render()};
+A.delAcc=async()=>{if(await askModal('Delete your account?','This permanently removes your profile and listings. It cannot be undone.','Delete forever'))await deleteAccount()};
+A.exportData=()=>exportData();
+A.clearCache=async()=>{if(await askModal('Clear device cache?','Removes the local copy on this device. '+(sb?'Your cloud data stays safe.':'<b>No cloud is connected — this erases ALL local data!</b>'),'Clear')){Object.keys(localStorage).filter(k=>k.startsWith(LS)&&!k.startsWith(LS+'bio_')).forEach(k=>localStorage.removeItem(k));location.reload()}};
+async function setProfileField(k,v){await dbUpdate('profiles',S.meId,{[k]:v});if(k==='lang'){S.lang=v;lsSet('lang',v)}if(k==='theme'){S.theme=v;lsSet('theme',v);applyTheme()}if(k==='currency'){S.cur=v;lsSet('cur',v)}render()}
+
+/* ---------- admin ---------- */
+R.admin=()=>{const tabs=[['overview','Overview'],['users','Users'],['sellers','Sellers'],['disputes','Disputes'],['ids','ID checks'],['ads','Ads'],['reports','Reports'],['support','Support'],['announce','Announce']];
+  const real=C.profiles.filter(p=>!p.seed);const done=C.orders.filter(o=>o.status==='completed');const sales=done.reduce((a,o)=>a+o.usd,0);const commission=C.transactions.filter(x=>x.uid==='platform'&&x.type==='commission').reduce((a,x)=>a+x.usd,0);const other=C.transactions.filter(x=>x.uid==='platform'&&x.type==='revenue').reduce((a,x)=>a+x.usd,0);
+  const pend={sellers:real.filter(p=>p.sellerStatus==='pending'),disp:C.disputes.filter(d=>d.status==='open'),ids:C.verifications.filter(v=>v.status==='pending'),ads:C.ads.filter(a=>a.status==='pending'),rep:C.reports.filter(r=>r.status==='open')};
+  const badge=k=>{const n={sellers:pend.sellers.length,disputes:pend.disp.length,ids:pend.ids.length,ads:pend.ads.length,reports:pend.rep.length}[k];return n?` <span class="pill r">${n}</span>`:''};
+  let b='';const tb=S.adminTab;
+  if(tb==='overview')b=`<div class="stats"><div class="stat"><b>${real.length}</b>Total users</div><div class="stat"><b>${done.length}</b>Completed sales</div><div class="stat"><b>${fmtUSD(sales)}</b>Total sales value</div><div class="stat"><b>${fmtUSD(commission)}</b>Total commission (5%)</div><div class="stat"><b>${fmtUSD(other)}</b>Pro, boosts &amp; ads</div><div class="stat"><b>${pend.disp.length}</b>Open disputes</div><div class="stat"><b>${C.products.length}</b>Products</div><div class="stat"><b>${C.orders.filter(o=>['escrow','shipped','delivered'].includes(o.status)).length}</b>Orders in escrow</div></div><div class="card"><b>Latest orders</b>${C.orders.slice(0,6).map(o=>`<div class="trow"><div>${esc(o.title)}<div class="mut sm">${esc(o.buyerName)} → ${esc(o.sellerName)}</div></div><div style="text-align:right"><b>${fmt(o.amount,o.cur)}</b><div class="mut sm">${(OST[o.status]||[o.status])[0]}</div></div></div>`).join('')||'<p class="mut">No orders yet.</p>'}</div>`;
+  if(tb==='users')b=`<div class="card scroll"><table class="tbl"><tr><th>User</th><th>Role</th><th>Status</th><th></th></tr>${real.map(p=>`<tr><td><b>${esc(p.name)}</b><div class="mut sm">${esc(p.email)}</div></td><td>${p.role}${p.verified?' ✔':''}</td><td><span class="pill ${p.status==='banned'?'r':'g'}">${p.status}</span></td><td>${p.role==='admin'?'':p.status==='banned'?`<button class="btn btn-s" data-a="unban" data-id="${p.id}">Unban</button>`:`<button class="btn btn-d btn-s" data-a="ban" data-id="${p.id}">Ban</button>`}</td></tr>`).join('')}</table></div>`;
+  if(tb==='sellers')b=`<div class="card"><b>Seller applications</b>${real.filter(p=>p.sellerStatus&&p.sellerStatus!=='none').map(p=>`<div class="trow"><div><b>${esc(p.storeName)}</b><div class="mut sm">${esc(p.name)} · ${esc(p.storeLocation||'')} · <span class="pill ${p.sellerStatus==='approved'?'g':p.sellerStatus==='pending'?'w':'r'}">${p.sellerStatus}</span></div></div><div class="row">${p.sellerStatus!=='approved'?`<button class="btn btn-g btn-s" data-a="sellerOk" data-id="${p.id}">Approve</button>`:''}${p.sellerStatus!=='rejected'?`<button class="btn btn-o btn-s" data-a="sellerNo" data-id="${p.id}">Reject</button>`:''}</div></div>`).join('')||'<p class="mut">No applications.</p>'}</div>`;
+  if(tb==='disputes')b=C.disputes.length?C.disputes.map(d=>`<div class="card"><div class="row sb"><b>${esc(d.title)}</b><span class="pill ${d.status==='open'?'r':'g'}">${d.status}</span></div><div class="mut sm">${esc(dName(d.buyer))} vs ${esc(dName(d.seller))} · ${fmt(d.amount,d.cur)} · ${ago(d.created_at)}</div><p class="sm" style="margin:6px 0">${esc(d.reason)}</p>${d.status==='open'?`<div class="row"><button class="btn btn-s" data-a="resolve" data-id="${d.id}" data-r="refund">Refund buyer</button><button class="btn btn-g btn-s" data-a="resolve" data-id="${d.id}" data-r="release">Release to seller</button></div>`:`<div class="mut sm">Resolution: ${esc(d.resolution||'')}</div>`}</div>`).join(''):empty('✅','No disputes.');
+  if(tb==='ids')b=C.verifications.length?C.verifications.map(v=>`<div class="card"><div class="row" style="flex-wrap:nowrap"><img src="${esc(v.photo)}" style="width:70px;height:70px;object-fit:cover;border-radius:10px" alt=""><div class="grow"><b>${esc(v.name)}</b><div class="mut sm">${esc(v.idType)} · ${esc(v.idNumber)} · <span class="pill ${v.status==='pending'?'w':v.status==='approved'?'g':'r'}">${v.status}</span></div></div></div>${v.status==='pending'?`<div class="row" style="margin-top:8px"><button class="btn btn-g btn-s" data-a="idOk" data-id="${v.id}">Approve</button><button class="btn btn-o btn-s" data-a="idNo" data-id="${v.id}">Reject</button></div>`:''}</div>`).join(''):empty('🪪','No ID submissions.');
+  if(tb==='ads')b=C.ads.length?C.ads.map(a=>`<div class="card"><div class="row sb"><b>${esc(a.brand)}</b><span class="pill ${a.status==='approved'?'g':a.status==='pending'?'w':'r'}">${a.status}</span></div><div class="sm">${esc(a.headline)} · ${fmtUSD(a.usd)}</div>${a.status==='pending'?`<div class="row" style="margin-top:8px"><button class="btn btn-g btn-s" data-a="adOk" data-id="${a.id}">Approve</button><button class="btn btn-o btn-s" data-a="adNo" data-id="${a.id}">Reject</button></div>`:''}</div>`).join(''):empty('📣','No ads yet.');
+  if(tb==='reports')b=C.reports.length?C.reports.map(r=>`<div class="card"><div class="row sb"><b>${esc(r.kind)} report</b><span class="pill ${r.status==='open'?'r':'g'}">${r.status}</span></div><div class="sm">${esc(r.reason)}</div><div class="mut sm">by ${esc(r.byName)} · ${ago(r.created_at)}</div>${r.status==='open'?`<div class="row" style="margin-top:8px"><button class="btn btn-s" data-a="repOpen" data-id="${r.id}">View item</button><button class="btn btn-d btn-s" data-a="repAct" data-id="${r.id}">Take down / ban</button><button class="btn btn-o btn-s" data-a="repDone" data-id="${r.id}">Dismiss</button></div>`:''}</div>`).join(''):empty('🚩','No reports.');
+  if(tb==='support')b=`<div class="card"><b>Live chats</b>${C.chats.filter(c=>c.type==='support').map(c=>`<div class="li" data-a="nav" data-r="chat" data-id="${c.id}">${avatar(c.members[0],40)}<div class="grow"><b>${esc(dName(c.members[0]))}</b><div class="mut sm">${esc(c.lastMsg||'')}</div></div><span class="mut sm">${c.lastAt?ago(c.lastAt):''}</span></div>`).join('')||'<p class="mut">No chats.</p>'}</div><div class="card"><b>Tickets</b>${C.tickets.map(x=>`<div class="trow"><div><b>${esc(x.subject)}</b><div class="mut sm">${esc(x.name)} — ${esc(x.body)}</div></div>${x.status==='open'?`<button class="btn btn-s" data-a="tkDone" data-id="${x.id}">Resolve</button>`:'<span class="pill g">done</span>'}</div>`).join('')||'<p class="mut">No tickets.</p>'}</div>`;
+  if(tb==='announce')b=`<div class="card"><b>Post announcement</b><form data-f="announce"><label>Title</label><input name="title" required><label>Message</label><textarea name="body" required></textarea><button class="btn btn-g btn-block" type="submit" style="margin-top:10px">Publish to everyone</button></form></div>${C.announcements.map(a=>`<div class="card row sb"><div><b>${esc(a.title)}</b><div class="mut sm">${esc(a.body)}</div></div><button class="btn btn-o btn-s" data-a="delAnn" data-id="${a.id}">${ic('trash')}</button></div>`).join('')}`;
+  return`<h2>👑 Admin — Emmanuel</h2><div class="tabs">${tabs.map(([k,l])=>`<button class="${tb===k?'on':''}" data-a="adminTab" data-t="${k}">${l}${badge(k)}</button>`).join('')}</div>${b}`};
+A.adminTab=el=>{S.adminTab=el.dataset.t;render()};
+A.ban=async el=>{if(!await askModal('Ban this user?','They will be logged out of access and their listings hidden.','Ban'))return;const id=el.dataset.id;await dbUpdate('profiles',id,{status:'banned'});for(const p of C.products.filter(p=>p.sellerId===id&&p.status==='in_stock'))await dbUpdate('products',p.id,{status:'draft'});toast('User banned');render()};
+A.unban=async el=>{await dbUpdate('profiles',el.dataset.id,{status:'active'});render()};
+A.sellerOk=async el=>{const id=el.dataset.id;await dbUpdate('profiles',id,{sellerStatus:'approved'});await ensureStoreChat(id);await sendNotification(id,'Store approved 🎉','Your store is approved. You can now publish products!',{link:'sell'});render()};
+A.sellerNo=async el=>{await dbUpdate('profiles',el.dataset.id,{sellerStatus:'rejected'});await sendNotification(el.dataset.id,'Store application update','Your store application was not approved. Contact support for details.',{link:'help'});render()};
+A.resolve=async el=>{const d=C.disputes.find(x=>x.id===el.dataset.id);const refund=el.dataset.r==='refund';if(!await askModal(refund?'Refund the buyer?':'Release to seller?','This moves the escrow funds and cannot be undone.','Confirm'))return;
+  if(refund)await processEscrow(d.orderId,'refund');else await releaseEscrow(d.orderId);await dbUpdate('disputes',d.id,{status:'resolved',resolution:refund?'Refunded to buyer':'Released to seller',resolvedBy:S.meId});
+  await sendNotification(d.buyer,'Dispute resolved',refund?'You were refunded.':'Funds were released to the seller.',{link:'orders'});await sendNotification(d.seller,'Dispute resolved',refund?'The buyer was refunded.':'Funds were released to you.',{link:'orders'});render()};
+A.idOk=async el=>{const v=C.verifications.find(x=>x.id===el.dataset.id);await dbUpdate('verifications',v.id,{status:'approved'});await dbUpdate('profiles',v.uid,{idVerified:true,verified:true});await sendNotification(v.uid,'ID verified ✔','You now have the Verified badge and can make large withdrawals.',{link:'wallet'});render()};
+A.idNo=async el=>{const v=C.verifications.find(x=>x.id===el.dataset.id);await dbUpdate('verifications',v.id,{status:'rejected'});await sendNotification(v.uid,'ID not accepted','Please resubmit a clear photo of a valid ID.',{link:'wallet'});render()};
+A.adOk=async el=>{await dbUpdate('ads',el.dataset.id,{status:'approved'});render()};A.adNo=async el=>{await dbUpdate('ads',el.dataset.id,{status:'rejected'});render()};
+A.repOpen=el=>{const r=C.reports.find(x=>x.id===el.dataset.id);if(r.kind==='product')go('product',r.targetId);else if(r.kind==='user')go('store',r.targetId);else go('creator')};
+A.repAct=async el=>{const r=C.reports.find(x=>x.id===el.dataset.id);if(!await askModal('Take action?','Product/post will be removed; a reported user will be banned.','Confirm'))return;
+  if(r.kind==='product')await dbDelete('products',r.targetId);else if(r.kind==='post')await dbDelete('posts',r.targetId);else if(r.kind==='user')await dbUpdate('profiles',r.targetId,{status:'banned'});await dbUpdate('reports',r.id,{status:'actioned'});render()};
+A.repDone=async el=>{await dbUpdate('reports',el.dataset.id,{status:'dismissed'});render()};
+A.tkDone=async el=>{await dbUpdate('tickets',el.dataset.id,{status:'done'});render()};
+F.announce=async f=>{await dbInsert('announcements',{owner:S.meId,title:f.title,body:f.body});await Promise.all(C.profiles.filter(p=>!p.seed&&p.id!==S.meId).slice(0,500).map(p=>dbInsert('notifications',{uid:p.id,owner:p.id,title:'📢 '+f.title,body:f.body,link:'home',read:false})));toast('Announcement published');render()};
+A.delAnn=async el=>{await dbDelete('announcements',el.dataset.id);render()};
+
+/* ---------- global events ---------- */
+async function run(fn){try{await fn()}catch(err){console.error(err);toast(err&&err.message?err.message:String(err),'err')}}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;const fn=A[el.dataset.a];if(!fn)return;run(()=>fn(el,e))});
+document.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();const fn=F[f.dataset.f];if(!fn)return;const data=Object.fromEntries(new FormData(f));const b=f.querySelector('button[type=submit]');if(b)b.disabled=true;run(()=>fn(data,f)).finally(()=>{if(b)b.disabled=false})});
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset.i===undefined)return;if(el.dataset.i==='curq'){$('#curList').innerHTML=curList(el.value);return}S.f[el.dataset.i]=el.value;clearTimeout(S.gt);S.gt=setTimeout(refreshGrid,150)});
+document.addEventListener('change',e=>{const el=e.target;
+  if(el.dataset.set!==undefined){const v=el.type==='checkbox'?el.checked:el.value;run(async()=>{await setSetting(el.dataset.set,v);toast('Saved')});return}
+  if(el.dataset.setp!==undefined){const v=el.type==='checkbox'?el.checked:el.value;run(()=>setProfileField(el.dataset.setp,v));return}
+  if(el.dataset.file&&FILE[el.dataset.file]){run(()=>FILE[el.dataset.file](el));return}
+  if(el.dataset.i!==undefined&&el.tagName==='SELECT'){S.f[el.dataset.i]=el.value;refreshGrid()}});
+document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.sec&&d.open)S.openSet=d.dataset.sec},true);
+document.addEventListener('keydown',e=>{if(e.target.id==='chatInput'&&e.key==='Enter'&&!e.shiftKey){const on=(((me()||{}).settings||{}).chat||{}).enterSend!==false;if(on){e.preventDefault();run(A.sendMsg)}}});
+document.addEventListener('pointerdown',e=>{if(e.target.closest('#micBtn')){e.preventDefault();startRec()}});
+['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev,()=>{if(REC.on||REC.want)stopRec()}));
+document.addEventListener('contextmenu',e=>{if(e.target.closest('#micBtn'))e.preventDefault()});
+
+/* ---------- demo seed + boot ---------- */
+function seedDemo(){const sid='seed-techhub';if(!U(sid)){C.profiles.push({id:sid,created_at:now(),name:'TechHub Lagos',storeName:'TechHub Lagos',email:'demo@techhub.example',phone:'',photo:null,role:'user',status:'active',verified:true,idVerified:true,seed:true,sellerStatus:'approved',storeOpen:true,rating:4.8,ratingCount:12,emailVerified:true,phoneVerified:true,settings:defaultSettings(),code:'SC-DEMO01',pro:true,lastSeen:now(),storeLocation:'Lagos, Nigeria',bio:'Demo store — trusted gadgets & repairs.'});lsSet('t_profiles',C.profiles)}
+  const items=[['iPhone 14 Pro 256GB','Phones','used',1200000,'Space Black, 91% battery health, with box & charger.'],['Samsung Galaxy S23 Ultra','Phones','new',980000,'Sealed, 12GB/256GB, 1-year warranty.'],['HP EliteBook 840 G8','Laptops','refurbished',250000,'Core i7 11th gen, 16GB RAM, 512GB SSD, 14" FHD.'],['MacBook Air M2 13"','Laptops','new',1450000,'8GB / 256GB, Midnight. Sealed.'],['AirPods Pro (2nd gen)','Accessories','new',185000,'USB-C, active noise cancellation.'],['Anker 20,000mAh Power Bank','Accessories','new',45000,'65W fast charging for phones and laptops.'],['Apple Watch Series 9 45mm','Gadgets','used',420000,'GPS, Midnight aluminium, minimal wear.'],['Smart Wi-Fi Bulb 4-pack','Smart Home','new',28000,'RGB, works with Alexa & Google Home.'],['Microsoft Office 2021 Licence','Software','new',35000,'Lifetime key, instant delivery.'],['Laptop Repair & Upgrade','Tech Services','new',15000,'Screen, battery, SSD/RAM upgrades. Same-day in Lagos.']];
+  items.forEach(([title,cat,cond,price,desc],i)=>C.products.push({id:'demo-'+i,created_at:new Date(Date.now()-i*36e5).toISOString(),owner:sid,sellerId:sid,title,cat,cond,price,cur:'NGN',desc,location:'Lagos, Nigeria',photos:[],status:'in_stock',views:20+i*7,demo:true,boostUntil:i<2?new Date(Date.now()+7*864e5).toISOString():null}));lsSet('t_products',C.products)}
+async function boot(){
+  document.head.insertAdjacentHTML('beforeend','<style>.acts svg{width:14px;height:14px}#micBtn svg{width:22px;height:22px}.sendb svg{width:20px;height:20px}.hero .btn{position:relative;z-index:2}</style>');
+  $('#splashLogo').innerHTML=logo(86);applyTheme();
+  try{const q=new URLSearchParams(location.search).get('ref');if(q)S.ref=q.toUpperCase()}catch(e){}
+  const h=location.hash.slice(1).split('/');if(h[0]&&R[h[0]]){S.route=h[0];S.arg=h[1]||null}
+  if(sb){try{const {data}=await sb.auth.getSession();S.meId=data.session?data.session.user.id:S.meId;if(!data.session)S.meId=null;lsSet('session',S.meId)}catch(e){}await loadAll();startRealtime()}
+  else if(!C.products.length)seedDemo();
+  await ensureGeneralChats();
+  if(S.meId&&!me())S.meId=null;
+  const m=me();if(m){if(m.status==='banned'){S.meId=null;lsSet('session',null);toast('This account is banned.','err')}else{S.unlocked=false;if(m.lang)S.lang=m.lang;if(m.theme){S.theme=m.theme}if(m.currency)S.cur=m.currency;applyTheme();if(!(m.settings&&m.settings.biometric))S.unlocked=true;dbUpdate('profiles',m.id,{lastSeen:now()})}}
+  render();loadLiveRates();refineCountryByIP();
+  setInterval(()=>{const u=me();if(u)dbUpdate('profiles',u.id,{lastSeen:now()})},60000);
+  setInterval(()=>{if(sb&&S.route==='chat')refreshTable('messages').then(renderChatBody)},4000);
+  if(sb&&m&&(!m.emailVerified||!m.phoneVerified)){}
+  const sp=$('#splash');sp.style.opacity=0;setTimeout(()=>sp.remove(),450)}
+Object.assign(window,{registerUser,loginUser,uploadProduct,getProducts,buyProduct,createChat,sendMessage,voiceToText,textToVoice,sendNotification,createWallet,processEscrow,releaseEscrow,rateSeller,createDispute,referUser});
+boot();
+
+</script>
+</body>
+</html>
